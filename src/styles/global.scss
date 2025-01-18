@@ -1,0 +1,26 @@
+@import 'colors';
+
+// ...existing code...
+
+body {
+    background-color: $lotion;
+    color: $vampire-black;
+}
+
+// Example usage in other elements
+.header {
+    background-color: $animal-blood;
+    color: $lotion;
+}
+
+.button {
+    background-color: $aztec-gold;
+    color: $vampire-black;
+}
+
+.alert {
+    background-color: $blood;
+    color: $lotion;
+}
+
+// ...existing code...
