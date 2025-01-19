@@ -2,18 +2,36 @@
 
 import { createContext, useContext, useState, ReactNode } from "react";
 
+interface User {
+  name: string;
+  email: string;
+  phone: string; // Added phone property
+  address: string; // Added address property
+}
+
 interface AuthContextType {
   isLoggedIn: boolean;
   setIsLoggedIn: (isLoggedIn: boolean) => void;
+  user: User | null;
+  setUser: (user: User | null) => void;
+  logout: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<User | null>(null);
+
+  const logout = () => {
+    setIsLoggedIn(false);
+    setUser(null);
+  };
 
   return (
-    <AuthContext.Provider value={{ isLoggedIn, setIsLoggedIn }}>
+    <AuthContext.Provider
+      value={{ isLoggedIn, setIsLoggedIn, user, setUser, logout }}
+    >
       {children}
     </AuthContext.Provider>
   );

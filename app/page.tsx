@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export default function Home() {
   const [city, setCity] = useState("");
@@ -231,11 +232,20 @@ export default function Home() {
       </div>
       {/* Top Donors Section */}
       <div className="mt-6 p-6 bg-[#0D1117] border border-[#C1272D] rounded-lg text-[#F8F9FA]">
-        <h1 className="text-3xl font-bold text-center">Top Donors of Last Month</h1>
+        <h1 className="text-3xl font-bold text-center">
+          Top Donors of Last Month
+        </h1>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-4">
           {["John Doe", "Jane Smith", "Alice Johnson"].map((donor, index) => (
-            <div key={index} className="p-4 border border-[#C1272D] rounded-lg text-center">
-              <img src="/image1.jpg" alt="Top Donor" className="w-24 h-24 rounded-full mx-auto mb-2 border-4 border-[#C1272D]" />
+            <div
+              key={index}
+              className="p-4 border border-[#C1272D] rounded-lg text-center"
+            >
+              <img
+                src="/image1.jpg"
+                alt="Top Donor"
+                className="w-24 h-24 rounded-full mx-auto mb-2 border-4 border-[#C1272D]"
+              />
               <h3 className="text-xl font-bold">{donor}</h3>
               <p className="text-sm">Most Donations This Month</p>
             </div>
