@@ -1,10 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useAuth } from "../context/AuthContext";
+import { useUser } from "@clerk/clerk-react";
 
 const Navbar = () => {
-  const { isLoggedIn, logout } = useAuth();
+  const { isSignedIn, isLoaded } = useUser();
 
   return (
     <div className="navbar bg-gradient-to-r from-[#0D1117] via-[#0D1117] to-[#0D1117] bg-opacity-80 backdrop-blur-lg text-[#F8F9FA] shadow-md px-6 py-3">
@@ -16,7 +16,7 @@ const Navbar = () => {
         </Link>
       </div>
       <div className="flex-none flex items-center space-x-4">
-        {isLoggedIn ? (
+        {isLoaded && isSignedIn ? (
           <>
             <Link href="/donors" legacyBehavior>
               <a className="btn bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F] transition duration-300">
@@ -58,19 +58,11 @@ const Navbar = () => {
                     </a>
                   </Link>
                 </li>
-                <li>
-                  <button
-                    onClick={logout}
-                    className="btn bg-[#8B1E3F] text-[#F8F9FA] hover:bg-[#C1272D] transition duration-300 w-full text-center"
-                  >
-                    Logout
-                  </button>
-                </li>
               </ul>
             </div>
           </>
         ) : (
-          <Link href="/login" legacyBehavior>
+          <Link href="/sign-in" legacyBehavior>
             <a className="btn bg-[#B0B3B8] text-[#0D1117] hover:bg-[#8B1E3F] transition duration-300">
               Login
             </a>
