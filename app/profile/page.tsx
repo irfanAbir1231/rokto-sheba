@@ -1,3 +1,4 @@
+// Profile.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -13,78 +14,65 @@ const Profile = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    const formData = {
-      firstName,
-      lastName,
-      email,
-      phone,
-      address,
-    };
-
+    const formData = { firstName, lastName, email, phone, address };
     try {
       const response = await fetch("/api/profile-update", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-
-      if (response.ok) {
-        console.log("Profile updated successfully");
-      } else {
-        console.error("Error updating profile");
-      }
+      if (response.ok) console.log("Profile updated successfully");
+      else console.error("Error updating profile");
     } catch (error) {
       console.error("Error occurred while updating profile:", error);
     }
   };
 
-  if (!isLoaded) {
-    return null;
-  }
-
+  if (!isLoaded) return null;
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-semibold mb-4">Profile</h1>
       <div className="bg-[#0D1117] p-6 rounded-lg shadow-lg text-[#F8F9FA]">
         <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-sm font-medium">First Name:</label>
-            <input
-              type="text"
-              value={firstName}
-              onChange={(e) => setFirstName(e.target.value)}
-              className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium">First Name:</label>
+              <input
+                type="text"
+                value={firstName}
+                onChange={(e) => setFirstName(e.target.value)}
+                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Last Name:</label>
+              <input
+                type="text"
+                value={lastName}
+                onChange={(e) => setLastName(e.target.value)}
+                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+              />
+            </div>
           </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium">Last Name:</label>
-            <input
-              type="text"
-              value={lastName}
-              onChange={(e) => setLastName(e.target.value)}
-              className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium">Email:</label>
-            <input
-              type="email"
-              value={email ? String(email) : ""}
-              onChange={(e) => setEmail(e.target.value)}
-              className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
-            />
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium">Phone:</label>
-            <input
-              type="text"
-              value={phone}
-              onChange={(e) => setPhone(e.target.value)}
-              className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
-            />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            <div>
+              <label className="block text-sm font-medium">Email:</label>
+              <input
+                type="email"
+                value={email ? String(email) : ""}
+                onChange={(e) => setEmail(e.target.value)}
+                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium">Phone:</label>
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+              />
+            </div>
           </div>
           <div className="mb-4">
             <label className="block text-sm font-medium">Address:</label>
