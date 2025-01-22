@@ -1,24 +1,49 @@
 "use client";
 
-import React from "react";
-import { useAuth } from "../../context/AuthContext";
-import { useState } from "react";
+import React, { useState } from "react";
+import { useUser } from "@clerk/clerk-react";
 
 const Profile = () => {
-  const { user, setUser } = useAuth();
-  const [name, setName] = useState(user?.name || "");
-  const [email, setEmail] = useState(user?.email || "");
-  const [phone, setPhone] = useState(user?.phone || "");
-  const [address, setAddress] = useState(user?.address || "");
+  const { user, isLoaded } = useUser();
+  const [firstName, setFirstName] = useState(user?.firstName || "");
+  const [lastName, setLastName] = useState(user?.lastName || "");
+  const [email, setEmail] = useState(user?.primaryEmailAddress || "");
+  const [phone, setPhone] = useState("");
+  const [address, setAddress] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setUser({ name, email, phone, address });
+
+    const formData = {
+      firstName,
+      lastName,
+      email,
+      phone,
+      address,
+    };
+
+    try {
+      const response = await fetch("/api/profile-update", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(formData),
+      });
+
+      if (response.ok) {
+        console.log("Profile updated successfully");
+      } else {
+        console.error("Error updating profile");
+      }
+    } catch (error) {
+      console.error("Error occurred while updating profile:", error);
+    }
   };
 
-  //   if (!user) {
-  //     return <div>Loading...</div>;
-  //   }
+  if (!isLoaded) {
+    return null;
+  }
 
   return (
     <div className="container mx-auto p-6">
@@ -26,11 +51,20 @@ const Profile = () => {
       <div className="bg-[#0D1117] p-6 rounded-lg shadow-lg text-[#F8F9FA]">
         <form onSubmit={handleSubmit}>
           <div className="mb-4">
-            <label className="block text-sm font-medium">Name:</label>
+            <label className="block text-sm font-medium">First Name:</label>
             <input
               type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
+              value={firstName}
+              onChange={(e) => setFirstName(e.target.value)}
+              className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+            />
+          </div>
+          <div className="mb-4">
+            <label className="block text-sm font-medium">Last Name:</label>
+            <input
+              type="text"
+              value={lastName}
+              onChange={(e) => setLastName(e.target.value)}
               className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
             />
           </div>
@@ -38,7 +72,7 @@ const Profile = () => {
             <label className="block text-sm font-medium">Email:</label>
             <input
               type="email"
-              value={email}
+              value={email ? String(email) : ""}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
             />

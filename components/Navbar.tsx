@@ -2,6 +2,19 @@
 
 import Link from "next/link";
 import { useUser } from "@clerk/clerk-react";
+import { UserButton } from "@clerk/nextjs";
+
+const DotIcon = () => {
+  return (
+    <svg
+      xmlns="http://www.w3.org/2000/svg"
+      viewBox="0 0 512 512"
+      fill="currentColor"
+    >
+      <path d="M256 512A256 256 0 1 0 256 0a256 256 0 1 0 0 512z" />
+    </svg>
+  );
+};
 
 const Navbar = () => {
   const { isSignedIn, isLoaded } = useUser();
@@ -33,32 +46,28 @@ const Navbar = () => {
                 Request for Blood
               </a>
             </Link>
-            <div className="dropdown dropdown-end">
-              <div
-                tabIndex={0}
-                role="button"
-                className="btn btn-ghost btn-circle avatar"
+            <div>
+              <UserButton
+                showName={true}
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: {
+                      width: "48px",
+                      height: "48px",
+                    },
+                    userButtonTrigger: {
+                      padding: "12px",
+                      fontSize: "16px",
+                    },
+                  },
+                }}
               >
-                <div className="w-12 h-12 rounded-full border-2 border-[#F8F9FA] shadow-lg overflow-hidden">
-                  <img
-                    alt="Profile"
-                    src="/image1.jpg"
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-              </div>
-              <ul
-                tabIndex={0}
-                className="mt-3 p-3 shadow-lg menu menu-compact dropdown-content bg-[#0D1117] text-[#F8F9FA] rounded-lg w-48"
-              >
-                <li>
-                  <Link href="/profile" legacyBehavior>
-                    <a className="btn bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F] transition duration-300 w-full text-center">
-                      Profile
-                    </a>
-                  </Link>
-                </li>
-              </ul>
+                <UserButton.UserProfileLink
+                  label="Donation Information"
+                  url="/profile"
+                  labelIcon={<DotIcon />}
+                />
+              </UserButton>
             </div>
           </>
         ) : (
