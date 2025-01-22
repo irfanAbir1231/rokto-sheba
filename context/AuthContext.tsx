@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 interface User {
   name: string;
@@ -22,10 +23,12 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [user, setUser] = useState<User | null>(null);
+  const router = useRouter(); // Initialize useRouter
 
   const logout = () => {
     setIsLoggedIn(false);
     setUser(null);
+    router.push("/"); // Redirect to home page after logout
   };
 
   return (
