@@ -1,4 +1,3 @@
-// Profile.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -8,13 +7,60 @@ const Profile = () => {
   const { user, isLoaded } = useUser();
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
-  const [email, setEmail] = useState(user?.primaryEmailAddress || "");
   const [phone, setPhone] = useState("");
-  const [address, setAddress] = useState("");
+  const [bloodGroup, setBloodGroup] = useState("");
+  const [address, setAddress] = useState({
+    name: "",
+    location: {
+      type: "Point",
+      coordinates: [0, 0], // Default coordinates
+    },
+  });
+  const [suggestions, setSuggestions] = useState([]);
+
+  // Function to fetch autocomplete suggestions from BariKoi
+  const fetchSuggestions = async (query: string) => {
+    if (query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://barikoi.xyz/v1/api/search/autocomplete/${process.env.NEXT_PUBLIC_BARIKOI_API_KEY}/place?q=${query}`
+      );
+      const data = await response.json();
+      setSuggestions(data.places || []);
+    } catch (error) {
+      console.error("Error fetching address suggestions:", error);
+    }
+  };
+
+  // Handle address input change
+  const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setAddress((prevAddress) => ({
+      ...prevAddress,
+      name: value,
+    }));
+    fetchSuggestions(value);
+  };
+
+  // Handle address selection from suggestions
+  const handleSuggestionClick = (suggestion: any) => {
+    setAddress({
+      name: suggestion.address,
+      location: {
+        type: "Point",
+        coordinates: [suggestion.longitude, suggestion.latitude],
+      },
+    });
+    setSuggestions([]);
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const formData = { firstName, lastName, email, phone, address };
+    const formData = { firstName, lastName, phone, bloodGroup, address };
     try {
       const response = await fetch("/api/profile-update", {
         method: "POST",
@@ -56,15 +102,6 @@ const Profile = () => {
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
-              <label className="block text-sm font-medium">Email:</label>
-              <input
-                type="email"
-                value={email ? String(email) : ""}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
-              />
-            </div>
-            <div>
               <label className="block text-sm font-medium">Phone:</label>
               <input
                 type="text"
@@ -73,15 +110,48 @@ const Profile = () => {
                 className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
               />
             </div>
+            <div>
+              <label className="block text-sm font-medium">Blood Group:</label>
+              <select
+                value={bloodGroup}
+                onChange={(e) => setBloodGroup(e.target.value)}
+                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+              >
+                <option value="" disabled>
+                  Select Blood Group
+                </option>
+                <option value="A+">A+</option>
+                <option value="A-">A-</option>
+                <option value="B+">B+</option>
+                <option value="B-">B-</option>
+                <option value="AB+">AB+</option>
+                <option value="AB-">AB-</option>
+                <option value="O+">O+</option>
+                <option value="O-">O-</option>
+              </select>
+            </div>
           </div>
-          <div className="mb-4">
+          <div className="mb-4 relative">
             <label className="block text-sm font-medium">Address:</label>
             <input
               type="text"
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
+              value={address.name}
+              onChange={handleAddressChange}
               className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
             />
+            {suggestions.length > 0 && (
+              <ul className="absolute z-10 bg-[#1E2228] text-[#F8F9FA] rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto w-full">
+                {suggestions.map((suggestion) => (
+                  <li
+                    key={suggestion.id}
+                    className="p-2 hover:bg-[#0D1117] cursor-pointer"
+                    onClick={() => handleSuggestionClick(suggestion)}
+                  >
+                    {suggestion.address}
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
           <button
             type="submit"
