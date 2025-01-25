@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useUser } from "@clerk/clerk-react";
+import { isValidPhoneNumber } from "@/lib/utils/validator";
 
 const Profile = () => {
   const { user, isLoaded } = useUser();
@@ -60,6 +61,10 @@ const Profile = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!isValidPhoneNumber(phone)) {
+      alert("Phone number must be 11 digits and start with '01'.");
+      return;
+    }
     const formData = { firstName, lastName, phone, bloodGroup, address };
     try {
       const response = await fetch("/api/profile-update", {
@@ -101,6 +106,15 @@ const Profile = () => {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+            {/* <div>
+              <label className="block text-sm font-medium">Phone:</label>
+              <input
+                type="text"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
+                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+              />
+            </div> */}
             <div>
               <label className="block text-sm font-medium">Phone:</label>
               <input
@@ -109,6 +123,11 @@ const Profile = () => {
                 onChange={(e) => setPhone(e.target.value)}
                 className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
               />
+              {!isValidPhoneNumber(phone) && phone.length > 0 && (
+                <p className="text-red-500 text-sm mt-1">
+                  Phone number must start with '01' and contain 11 digits.
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-sm font-medium">Blood Group:</label>

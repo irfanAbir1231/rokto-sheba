@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { currentUser } from "@clerk/nextjs/server";
+import { currentUser, clerkClient } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/db/config";
 import User from "@/lib/models/User";
 
@@ -26,6 +26,21 @@ export async function POST(request: Request) {
       return NextResponse.json(
         { success: false, message: "All fields are required" },
         { status: 400 }
+      );
+    }
+
+    const client = await clerkClient();
+
+    try {
+      await client.users.updateUser(user.id, {
+        firstName,
+        lastName,
+      });
+    } catch (err) {
+      console.error("Error updating Clerk user:", err);
+      return NextResponse.json(
+        { success: false, message: "Failed to update Clerk user profile" },
+        { status: 500 }
       );
     }
 
