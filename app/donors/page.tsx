@@ -17,24 +17,7 @@ export default function Donors() {
     lastDonationDate: string;
   }
 
-  const [donors, setDonors] = useState<Donor[]>([
-    {
-      gender: "Male",
-      name: "John Doe",
-      bloodGroup: "A+",
-      location: "Dhaka",
-      phone: "123456789",
-      lastDonationDate: "2023-01-15",
-    },
-    {
-      gender: "Female",
-      name: "Jane Smith",
-      bloodGroup: "O-",
-      location: "Chattogram",
-      phone: "987654321",
-      lastDonationDate: "2023-02-20",
-    },
-  ]);
+  const [donors, setDonors] = useState<Donor[]>([]);
 
   const handleSearch = () => {
     const filteredDonors = donors.filter(donor => donor.location === city && donor.bloodGroup === bloodGroup && donor.gender === gender);
@@ -99,7 +82,7 @@ export default function Donors() {
           donors.map((donor, index) => (
             <div
               key={index}
-              className="flex flex-col md:flex-row items-center bg-[#0D1117] shadow-lg rounded-xl p-6 border border-[#C1272D] hover:scale-105"
+              className="flex items-center bg-[#0D1117] shadow-lg rounded-xl p-6 border border-[#C1272D] hover:scale-105"
             >
               <figure className="w-20 h-20">
                 <img
@@ -108,13 +91,13 @@ export default function Donors() {
                   className="rounded-full border-4 border-[#C1272D]"
                 />
               </figure>
-              <div className="ml-0 md:ml-6 mt-4 md:mt-0 flex-1 text-center md:text-left">
+              <div className="ml-6 flex-1">
                 <h2 className="text-2xl font-bold">{donor.name}</h2>
                 <p><strong className="text-[#C1272D]">Blood Group:</strong> {donor.bloodGroup}</p>
                 <p><strong className="text-[#C1272D]">Location:</strong> {donor.location}</p>
                 <p><strong className="text-[#C1272D]">Last Donation Date:</strong> {donor.lastDonationDate}</p>
               </div>
-              <div className="flex space-x-2 mt-4 md:mt-0">
+              <div className="flex space-x-2">
                 <a
                   href={`sms:${donor.phone}`}
                   className="btn bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F] flex items-center"
