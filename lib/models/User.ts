@@ -16,6 +16,8 @@ export interface UserDocument extends Document {
   address: Address; // Address with geospatial data
   imageURL: string; // Profile image URL
   bloodGroup: string;
+  dob: Date;
+  isUpdated: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -40,6 +42,8 @@ const UserSchema = new Schema<UserDocument>(
     address: { type: AddressSchema, required: true },
     imageURL: { type: String, required: false, trim: true },
     bloodGroup: { type: String, required: true, trim: true },
+    dob: { type: Date, required: true },
+    isUpdated: { type: Boolean, default: false },
   },
   { timestamps: true } // Adds createdAt and updatedAt fields automatically
 );

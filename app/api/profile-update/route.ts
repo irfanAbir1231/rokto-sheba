@@ -19,10 +19,10 @@ export async function POST(request: Request) {
 
     // Parse the request body
     const body = await request.json();
-    const { firstName, lastName, phone, address, bloodGroup } = body;
+    const { firstName, lastName, phone, address, bloodGroup, dob } = body;
 
     // Validate the required fields
-    if (!firstName || !lastName || !phone || !address || !bloodGroup) {
+    if (!firstName || !lastName || !phone || !address || !bloodGroup || !dob) {
       return NextResponse.json(
         { success: false, message: "All fields are required" },
         { status: 400 }
@@ -55,6 +55,8 @@ export async function POST(request: Request) {
         address, // Ensure this matches the schema
         imageURL: user.imageUrl, // Clerk user profile image
         bloodGroup,
+        dob,
+        isUpdated: true,
       },
       { upsert: true, new: true, setDefaultsOnInsert: true } // Create if not exists
     );
@@ -71,3 +73,5 @@ export async function POST(request: Request) {
     );
   }
 }
+
+
