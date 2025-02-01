@@ -38,7 +38,7 @@ const UserSchema = new Schema<UserDocument>(
     clerkID: { type: String, required: true, unique: true },
     firstName: { type: String, required: true, trim: true },
     lastName: { type: String, required: true, trim: true },
-    phone: { type: String, required: true, unique: true },
+    phone: { type: String, required: true},
     address: { type: AddressSchema, required: true },
     imageURL: { type: String, required: false, trim: true },
     bloodGroup: { type: String, required: true, trim: true },

@@ -40,7 +40,7 @@ const Profile = () => {
         const response = await fetch(`/api/profile?clerkID=${user.id}`);
         const data = await response.json();
 
-        if (response.ok && data.isUpdated) {
+        if (data && response.ok && data.isUpdated) {
           const formattedDob = new Date(data.dob).toISOString().split("T")[0];
           setFirstName(data.firstName);
           setLastName(data.lastName);
@@ -49,6 +49,9 @@ const Profile = () => {
           setDob(formattedDob);
           setAddress(data.address);
           setIsUpdated(true);
+        }
+        else {
+          console.log("User profile not registered in database yet");
         }
       } catch (error) {
         console.error("Error fetching profile data:", error);

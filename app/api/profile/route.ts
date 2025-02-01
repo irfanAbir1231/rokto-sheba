@@ -25,8 +25,6 @@ export async function GET(request: Request) {
       );
     }
 
-    console.log("User found:", user);
-
     return NextResponse.json(
       {
         success: true,
