@@ -2,9 +2,11 @@
 
 import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
+import { useRouter } from "next/navigation"; // Import useRouter
 
 const Profile = () => {
   const { user, isLoaded } = useUser();
+  const router = useRouter(); // Initialize useRouter
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
@@ -30,6 +32,10 @@ const Profile = () => {
         const response = await fetch(`/api/profile?clerkID=${user.id}`);
         if (response.ok) {
           const data = await response.json();
+          if (!data.isUpdated) {
+            router.push("/profile-update"); // Redirect to profile update page if info is not saved
+            return;
+          }
           setFirstName(data.firstName);
           setLastName(data.lastName);
           setPhone(data.phone);
@@ -49,6 +55,10 @@ const Profile = () => {
 
   if (!isLoaded) return null;
 
+  const handleUpdateClick = () => {
+    router.push("/profile-update"); // Redirect to profile update page
+  };
+
   return (
     <div className="container mx-auto p-6">
       <h1 className="text-3xl font-semibold mb-4">Profile</h1>
@@ -60,6 +70,12 @@ const Profile = () => {
         <p><strong>Blood Group:</strong> {bloodGroup}</p>
         <p><strong>Date of Birth:</strong> {dob}</p>
         <p><strong>Address:</strong> {address.name}</p>
+        <button
+          onClick={handleUpdateClick}
+          className="btn bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F] transition duration-300 mt-4"
+        >
+          Update
+        </button>
       </div>
     </div>
   );

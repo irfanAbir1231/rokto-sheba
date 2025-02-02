@@ -51,9 +51,7 @@ const Profile = () => {
           setDob(formattedDob);
           setAddress(data.address);
           setIsUpdated(true);
-          router.push("/profile"); // Redirect to /profile if info is already saved
-        }
-        else {
+        } else {
           console.log("User profile not registered in database yet");
         }
       } catch (error) {
