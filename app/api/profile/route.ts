@@ -7,7 +7,7 @@ export async function GET(request: Request) {
     await connectDB();
 
     const { searchParams } = new URL(request.url);
-    const clerkID = searchParams.get("clerkID");
+    const clerkID = searchParams.get("clerkID"); // Use clerkID as parameter
 
     if (!clerkID) {
       return NextResponse.json(
@@ -16,7 +16,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const user = await User.findOne({ clerkID });
+    const user = await User.findOne({ clerkID }); // Use clerkID to find the user
 
     if (!user) {
       return NextResponse.json(

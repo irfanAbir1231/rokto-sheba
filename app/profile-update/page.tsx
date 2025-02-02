@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { isValidPhoneNumber } from "@/lib/utils/validator";
+import { useRouter } from "next/navigation"; // Updated import
 
 const Profile = () => {
   const { user, isLoaded } = useUser();
@@ -20,6 +21,7 @@ const Profile = () => {
   });
   const [isUpdated, setIsUpdated] = useState(false); 
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   interface Suggestion {
     id: string;
@@ -49,6 +51,7 @@ const Profile = () => {
           setDob(formattedDob);
           setAddress(data.address);
           setIsUpdated(true);
+          router.push("/profile"); // Redirect to /profile if info is already saved
         }
         else {
           console.log("User profile not registered in database yet");
@@ -116,8 +119,12 @@ const Profile = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
-      if (response.ok) console.log("Profile updated successfully");
-      else console.error("Error updating profile");
+      if (response.ok) {
+        console.log("Profile updated successfully");
+        router.push("/profile"); // Redirect to /profile after saving
+      } else {
+        console.error("Error updating profile");
+      }
     } catch (error) {
       console.error("Error occurred while updating profile:", error);
     }
