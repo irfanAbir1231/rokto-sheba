@@ -104,6 +104,14 @@ const Profile = () => {
     setSuggestions([]);
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, reportType: string) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      // Handle file upload logic here
+      console.log(`File selected for ${reportType}:`, file);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidPhoneNumber(phone)) {
@@ -223,9 +231,61 @@ const Profile = () => {
               </ul>
             )}
           </div>
+          <div className="mb-4">
+            <label className="form-control w-full max-w-xs">
+              <div className="label">
+                <span className="label-text">HBsAg Report</span>
+                <span className="label-text-alt">Upload your HBsAg report</span>
+              </div>
+              <input
+                type="file"
+                className="file-input file-input-bordered w-full max-w-xs"
+                onChange={(e) => handleFileChange(e, "HBsAg")}
+              />
+            </label>
+          </div>
+          <div className="mb-4">
+            <label className="form-control w-full max-w-xs">
+              <div className="label">
+                <span className="label-text">VDRL Report</span>
+                <span className="label-text-alt">Upload your VDRL report</span>
+              </div>
+              <input
+                type="file"
+                className="file-input file-input-bordered w-full max-w-xs"
+                onChange={(e) => handleFileChange(e, "VDRL")}
+              />
+            </label>
+          </div>
+          <div className="mb-4">
+            <label className="form-control w-full max-w-xs">
+              <div className="label">
+                <span className="label-text">Anti HCV Report</span>
+                <span className="label-text-alt">Upload your Anti HCV report</span>
+              </div>
+              <input
+                type="file"
+                className="file-input file-input-bordered w-full max-w-xs"
+                onChange={(e) => handleFileChange(e, "Anti HCV")}
+              />
+            </label>
+          </div>
+          <div className="mb-4">
+            <label className="form-control w-full max-w-xs">
+              <div className="label">
+                <span className="label-text">CBC Report</span>
+                <span className="label-text-alt">Upload your CBC report</span>
+              </div>
+              <input
+                type="file"
+                className="file-input file-input-bordered w-full max-w-xs"
+                onChange={(e) => handleFileChange(e, "CBC")}
+              />
+            </label>
+          </div>
           <button
             type="submit"
-            className="btn bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F] transition duration-300"
+            className="btn bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F] transition duration-300 w-full md:w-auto"
             disabled={!isFormValid}
           >
             Save
