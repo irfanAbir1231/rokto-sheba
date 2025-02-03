@@ -139,9 +139,9 @@ const Profile = () => {
   if (!isLoaded || isLoading) return <div>Loading...</div>;
 
   return (
-    <div className="container mx-auto p-6">
-      <h1 className="text-3xl font-semibold mb-4">Profile</h1>
-      <div className="bg-[#0D1117] p-6 rounded-lg shadow-lg text-[#F8F9FA]">
+    <div className="container mx-auto p-4 sm:p-6">
+      <h1 className="text-2xl sm:text-3xl font-semibold mb-4">Profile</h1>
+      <div className="bg-[#0D1117] p-4 sm:p-6 rounded-lg shadow-lg text-[#F8F9FA]">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>

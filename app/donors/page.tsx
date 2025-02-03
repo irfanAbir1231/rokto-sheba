@@ -25,10 +25,10 @@ export default function Donors() {
   };
 
   return (
-    <div className="p-10 bg-[#0D1117] min-h-screen">
-      <h1 className="text-3xl font-bold mb-5 text-[#F8F9FA]">Find Donors</h1>
+    <div className="p-4 sm:p-10 bg-[#0D1117] min-h-screen">
+      <h1 className="text-2xl sm:text-3xl font-bold mb-5 text-[#F8F9FA]">Find Donors</h1>
       <div className="form-control">
-        <div className="flex flex-wrap justify-center gap-4 py-4">
+        <div className="flex flex-col sm:flex-wrap justify-center gap-4 py-4">
           <select
             className="select select-bordered w-full max-w-xs bg-[#0D1117] text-[#F8F9FA] border-[#C1272D]"
             value={city}
@@ -82,7 +82,7 @@ export default function Donors() {
           donors.map((donor, index) => (
             <div
               key={index}
-              className="flex items-center bg-[#0D1117] shadow-lg rounded-xl p-6 border border-[#C1272D] hover:scale-105"
+              className="flex flex-col md:flex-row items-center bg-[#0D1117] shadow-lg rounded-xl p-4 sm:p-6 border border-[#C1272D] hover:scale-105"
             >
               <figure className="w-20 h-20">
                 <img

@@ -14,12 +14,12 @@ export default function RequestBlood() {
   };
 
   return (
-    <div className="hero min-h-screen bg-[#0D1117]">
+    <div className="hero min-h-screen bg-[#0D1117] px-4 sm:px-6 lg:px-8">
       <div className="hero-content text-center">
-        <div className="max-w-md">
-          <h1 className="text-5xl font-bold text-[#F8F9FA]">Request for Blood</h1>
-          <p className="py-6 text-[#F8F9FA]">Fill out the form below to request blood.</p>
-          <div className="form-control w-full max-w-sm">
+        <div className="max-w-md mx-auto">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-[#F8F9FA]">Request for Blood</h1>
+          <p className="py-4 sm:py-6 text-[#F8F9FA]">Fill out the form below to request blood.</p>
+          <div className="form-control w-full max-w-sm mx-auto">
             <label className="label"><span className="label-text text-[#F8F9FA]">Name</span></label>
             <input
               type="text"

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@clerk/clerk-react";
 import { UserButton } from "@clerk/nextjs";
@@ -22,24 +22,75 @@ const DotIcon = () => {
 const Navbar = () => {
   const { isSignedIn, isLoaded } = useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const toggleMenu = () => {
     setIsMenuOpen(!isMenuOpen);
   };
 
+  const handleLinkClick = () => {
+    setIsMenuOpen(false);
+  };
+
+  const handleClickOutside = (event: MouseEvent) => {
+    if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+      setIsMenuOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
-    <nav className="relative">
+    <nav className="fixed top-0 left-0 w-full z-50">
       <div className="navbar bg-gradient-to-r from-[#0D1117] via-[#0D1117] to-[#0D1117] bg-opacity-80 backdrop-blur-lg text-[#F8F9FA] shadow-md px-4 sm:px-6 py-3">
         <div className="flex-1">
           <Link href="/" legacyBehavior>
             <a className="text-xl sm:text-2xl font-semibold text-[#C1272D] hover:text-[#8B1E3F] transition duration-300">
-              Blood Donation App
+              Blood Donation
             </a>
           </Link>
         </div>
 
-        {/* Mobile Menu Button */}
-        <div className="flex lg:hidden">
+        {/* Mobile Menu Button and User Avatar */}
+        <div className="flex lg:hidden items-center space-x-4">
+          {isLoaded && isSignedIn && (
+            <div className="flex items-center">
+              <UserButton
+                showName={false}
+                appearance={{
+                  elements: {
+                    userButtonAvatarBox: {
+                      width: "32px",
+                      height: "32px",
+                    },
+                    userButtonTrigger: {
+                      padding: "0",
+                    },
+                  },
+                }}
+                userProfileProps={{
+                  appearance: {
+                    elements: {
+                      userProfile: {
+                        // Customize the user profile modal if needed
+                      },
+                    },
+                  },
+                }}
+              >
+                <UserButton.UserProfileLink
+                  label="Donation Information"
+                  url="/profile-update"
+                  labelIcon={<DotIcon />}
+                />
+              </UserButton>
+            </div>
+          )}
           <button
             onClick={toggleMenu}
             className="text-[#F8F9FA] hover:text-[#C1272D] transition-colors"
@@ -69,7 +120,7 @@ const Navbar = () => {
               </Link>
               <div>
                 <UserButton
-                  showName={true}
+                  showName={false}
                   appearance={{
                     elements: {
                       userButtonAvatarBox: {
@@ -77,15 +128,23 @@ const Navbar = () => {
                         height: "40px",
                       },
                       userButtonTrigger: {
-                        padding: "8px",
-                        fontSize: "14px",
+                        padding: "0",
+                      },
+                    },
+                  }}
+                  userProfileProps={{
+                    appearance: {
+                      elements: {
+                        userProfile: {
+                          // Customize the user profile modal if needed
+                        },
                       },
                     },
                   }}
                 >
                   <UserButton.UserProfileLink
                     label="Donation Information"
-                    url="/profile"
+                    url="/profile-update"
                     labelIcon={<DotIcon />}
                   />
                 </UserButton>
@@ -103,55 +162,53 @@ const Navbar = () => {
 
       {/* Mobile Menu */}
       <div
-        className={`lg:hidden absolute top-full left-0 right-0 bg-[#0D1117] bg-opacity-95 backdrop-blur-lg shadow-lg transition-all duration-300 ease-in-out ${
-          isMenuOpen ? "opacity-100 visible" : "opacity-0 invisible"
+        ref={menuRef}
+        className={`lg:hidden fixed top-0 left-0 h-full w-4/6 bg-[#151b24] bg-opacity-95 backdrop-blur-lg shadow-lg transition-all duration-300 ease-in-out ${
+          isMenuOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
-        <div className="flex flex-col space-y-3 p-4">
+        <div className="flex flex-col space-y-3 p-4 h-full">
+          <div className="flex justify-end">
+            <button
+              onClick={toggleMenu}
+              className="text-[#F8F9FA] hover:text-[#C1272D] transition-colors"
+            >
+              <X size={24} />
+            </button>
+          </div>
           {isLoaded && isSignedIn ? (
             <>
               <Link href="/donors" legacyBehavior>
-                <a className="btn btn-sm w-full bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F] transition duration-300">
+                <a
+                  className="btn btn-sm w-full bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F] transition duration-300"
+                  onClick={handleLinkClick}
+                >
                   Find Donors
                 </a>
               </Link>
               <Link href="/recent-requests" legacyBehavior>
-                <a className="btn btn-sm w-full bg-[#0D1117] text-[#F8F9FA] hover:bg-[#8B1E3F] transition duration-300">
+                <a
+                  className="btn btn-sm w-full bg-[#0D1117] text-[#F8F9FA] hover:bg-[#8B1E3F] transition duration-300"
+                  onClick={handleLinkClick}
+                >
                   Recent Requests
                 </a>
               </Link>
               <Link href="/request-blood" legacyBehavior>
-                <a className="btn btn-sm w-full bg-[#B0B3B8] text-[#0D1117] hover:bg-[#8B1E3F] transition duration-300">
+                <a
+                  className="btn btn-sm w-full bg-[#B0B3B8] text-[#0D1117] hover:bg-[#8B1E3F] transition duration-300"
+                  onClick={handleLinkClick}
+                >
                   Request for Blood
                 </a>
               </Link>
-              <div className="flex justify-center">
-                <UserButton
-                  showName={true}
-                  appearance={{
-                    elements: {
-                      userButtonAvatarBox: {
-                        width: "36px",
-                        height: "36px",
-                      },
-                      userButtonTrigger: {
-                        padding: "6px",
-                        fontSize: "14px",
-                      },
-                    },
-                  }}
-                >
-                  <UserButton.UserProfileLink
-                    label="Donation Information"
-                    url="/profile"
-                    labelIcon={<DotIcon />}
-                  />
-                </UserButton>
-              </div>
             </>
           ) : (
             <Link href="/sign-in" legacyBehavior>
-              <a className="btn btn-sm w-full bg-[#B0B3B8] text-[#0D1117] hover:bg-[#8B1E3F] transition duration-300">
+              <a
+                className="btn btn-sm w-full bg-[#B0B3B8] text-[#0D1117] hover:bg-[#8B1E3F] transition duration-300"
+                onClick={handleLinkClick}
+              >
                 Login
               </a>
             </Link>

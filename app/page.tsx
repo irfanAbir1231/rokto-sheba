@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Navbar from "../components/Navbar"; // Import the Navbar component
 
 export default function Home() {
   const [city, setCity] = useState("");
@@ -54,6 +55,9 @@ export default function Home() {
 
   return (
     <div className="relative min-h-screen bg-[#0D1117] px-4 sm:px-6 lg:px-8">
+      {/* Navbar */}
+      <Navbar />
+
       {/* Animated Images - Hidden on mobile */}
       <div
         className="hidden lg:block absolute left-0 top-[4%] transform -translate-x-full transition-transform duration-1000"
