@@ -20,6 +20,8 @@ const DotIcon = () => {
 };
 
 const Navbar = () => {
+  const { user } = useUser();
+  const [profileUrl, setProfileUrl] = useState("/profile-update");
   const { isSignedIn, isLoaded } = useUser();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -45,13 +47,34 @@ const Navbar = () => {
     };
   }, []);
 
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchUser = async () => {
+      try {
+        const response = await fetch(`/api/profile?clerkID=${user.id}`);
+        const data = await response.json();
+
+        if (data.success) {
+          setProfileUrl("/profile");
+        } else {
+          setProfileUrl("/profile-update");
+        }
+      } catch (error) {
+        console.log("Error fetching user data:", error);
+      }
+    };
+
+    fetchUser();
+  }, [user]);
+
   return (
     <nav className="fixed top-0 left-0 w-full z-50">
       <div className="navbar bg-gradient-to-r from-[#0D1117] via-[#0D1117] to-[#0D1117] bg-opacity-80 backdrop-blur-lg text-[#F8F9FA] shadow-md px-4 sm:px-6 py-3">
         <div className="flex-1">
           <Link href="/" legacyBehavior>
             <a className="text-xl sm:text-2xl font-semibold text-[#C1272D] hover:text-[#8B1E3F] transition duration-300">
-              Blood Donation
+              রক্তসেবা
             </a>
           </Link>
         </div>
@@ -144,7 +167,7 @@ const Navbar = () => {
                 >
                   <UserButton.UserProfileLink
                     label="Donation Information"
-                    url="/profile-update"
+                    url={profileUrl}
                     labelIcon={<DotIcon />}
                   />
                 </UserButton>

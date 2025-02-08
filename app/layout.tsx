@@ -6,8 +6,8 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { dark } from "@clerk/themes";
 
 export const metadata: Metadata = {
-  title: "Blood Donation App",
-  description: "Find and connect with blood donors.",
+  title: "রক্তসেবা",
+  description: "Find and connect with blood donors around you.",
 };
 
 export default function RootLayout({
