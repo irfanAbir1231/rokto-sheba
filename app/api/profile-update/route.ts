@@ -19,12 +19,32 @@ export async function POST(request: Request) {
 
     // Parse the request body
     const body = await request.json();
-    const { firstName, lastName, phone, address, bloodGroup, dob } = body;
+    const {
+      firstName,
+      lastName,
+      phone,
+      address,
+      nidNumber, 
+      bloodGroup,
+      dob,
+      hbsAgReport,
+      vdrlReport,
+      antiHcvReport,
+      cbcReport,
+    } = body;
 
-    // Validate the required fields
-    if (!firstName || !lastName || !phone || !address || !bloodGroup || !dob) {
+    // Validate required fields
+    if (
+      !firstName ||
+      !lastName ||
+      !phone ||
+      !address ||
+      !nidNumber ||
+      !bloodGroup ||
+      !dob
+    ) {
       return NextResponse.json(
-        { success: false, message: "All fields are required" },
+        { success: false, message: "All required fields must be provided" },
         { status: 400 }
       );
     }
@@ -52,11 +72,16 @@ export async function POST(request: Request) {
         firstName,
         lastName,
         phone,
-        address, // Ensure this matches the schema
+        address,
+        nidNumber,
         imageURL: user.imageUrl, // Clerk user profile image
         bloodGroup,
         dob,
         isUpdated: true,
+        hbsAgReport: hbsAgReport || null,
+        vdrlReport: vdrlReport || null,
+        antiHcvReport: antiHcvReport || null,
+        cbcReport: cbcReport || null,
       },
       { upsert: true, new: true, setDefaultsOnInsert: true } // Create if not exists
     );
@@ -73,5 +98,3 @@ export async function POST(request: Request) {
     );
   }
 }
-
-

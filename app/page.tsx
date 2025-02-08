@@ -76,7 +76,7 @@ export default function Home() {
       {/* Main Content */}
       <div className="relative z-10 flex items-center justify-center min-h-screen py-12">
         <div className="w-full max-w-4xl text-center text-[#F8F9FA]">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">Welcome to Blood Donation App</h1>
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold">Welcome to রক্তসেবা</h1>
           <p className="py-4 sm:py-6 text-sm sm:text-base">
             Find and connect with blood donors nearby. Register now to save lives!
           </p>

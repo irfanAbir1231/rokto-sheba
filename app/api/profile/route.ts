@@ -31,10 +31,15 @@ export async function GET(request: Request) {
         firstName: user.firstName,
         lastName: user.lastName,
         phone: user.phone,
+        nidNumber: user.nidNumber,
         bloodGroup: user.bloodGroup,
         dob: user.dob,
         address: user.address,
         isUpdated: user.isUpdated,
+        hbsAgReport: user.hbsAgReport || null, 
+        vdrlReport: user.vdrlReport || null, 
+        antiHcvReport: user.antiHcvReport || null, 
+        cbcReport: user.cbcReport || null, 
       },
       { status: 200 }
     );
