@@ -31,7 +31,7 @@ const Navbar = () => {
   };
 
   const handleLinkClick = () => {
-    setIsMenuOpen(false);
+    setIsMenuOpen(false); // Close the menu when a link is clicked
   };
 
   const handleClickOutside = (event: MouseEvent) => {
@@ -100,7 +100,7 @@ const Navbar = () => {
                   appearance: {
                     elements: {
                       userProfile: {
-          
+                        // Customize the user profile modal if needed
                       },
                     },
                   },
@@ -118,7 +118,8 @@ const Navbar = () => {
             onClick={toggleMenu}
             className="text-[#F8F9FA] hover:text-[#C1272D] transition-colors"
           >
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}{" "}
+            {/* Show X when menu is open, otherwise show Menu */}
           </button>
         </div>
 
@@ -191,14 +192,6 @@ const Navbar = () => {
         }`}
       >
         <div className="flex flex-col space-y-3 p-4 h-full">
-          <div className="flex justify-end">
-            <button
-              onClick={toggleMenu}
-              className="text-[#F8F9FA] hover:text-[#C1272D] transition-colors"
-            >
-              <X size={24} />
-            </button>
-          </div>
           {isLoaded && isSignedIn ? (
             <>
               <Link href="/donors" legacyBehavior>

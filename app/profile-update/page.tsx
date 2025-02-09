@@ -21,6 +21,7 @@ const Profile = () => {
   });
   const [isUpdated, setIsUpdated] = useState(false); 
   const [isLoading, setIsLoading] = useState(true);
+  const [avatar, setAvatar] = useState(user?.imageUrl || "");
   const router = useRouter();
 
   interface Suggestion {
@@ -50,6 +51,7 @@ const Profile = () => {
           setBloodGroup(data.bloodGroup);
           setDob(formattedDob);
           setAddress(data.address);
+          setAvatar(data.avatar || user.imageUrl);
           setIsUpdated(true);
         } else {
           console.log("User profile not registered in database yet");
@@ -93,7 +95,7 @@ const Profile = () => {
   };
 
   // Handle address selection from suggestions
-  const handleSuggestionClick = (suggestion: any) => {
+  const handleSuggestionClick = (suggestion: Suggestion) => {
     setAddress({
       name: suggestion.address,
       location: {
@@ -112,13 +114,38 @@ const Profile = () => {
     }
   };
 
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      const formData = new FormData();
+      formData.append("avatar", file);
+
+      try {
+        const response = await fetch("/api/avatar-upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          setAvatar(data.avatarUrl);
+          console.log("Avatar updated successfully");
+        } else {
+          console.error("Error updating avatar");
+        }
+      } catch (error) {
+        console.error("Error occurred while updating avatar:", error);
+      }
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidPhoneNumber(phone)) {
       alert("Phone number must be 11 digits and start with '01'.");
       return;
     }
-    const formData = { firstName, lastName, phone, bloodGroup, dob, address };
+    const formData = { firstName, lastName, phone, bloodGroup, dob, address, avatar };
     try {
       const response = await fetch("/api/profile-update", {
         method: "POST",
@@ -140,7 +167,21 @@ const Profile = () => {
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
-      <h1 className="text-2xl sm:text-3xl font-semibold mb-4">Profile</h1>
+      <h1 className="text-2xl sm:text-3xl font-semibold mb-4 text-center">Profile</h1>
+      <div className="flex justify-center mb-4">
+        <div className="relative">
+          <img
+            src={avatar}
+            alt="User Avatar"
+            className="w-24 h-24 rounded-full object-cover border-4 border-gray-300"
+          />
+          <input
+            type="file"
+            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+            onChange={handleAvatarChange}
+          />
+        </div>
+      </div>
       <div className="bg-[#0D1117] p-4 sm:p-6 rounded-lg shadow-lg text-[#F8F9FA]">
         <form onSubmit={handleSubmit}>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
@@ -150,7 +191,7 @@ const Profile = () => {
                 type="text"
                 value={firstName}
                 onChange={(e) => setFirstName(e.target.value)}
-                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
               />
             </div>
             <div>
@@ -159,7 +200,7 @@ const Profile = () => {
                 type="text"
                 value={lastName}
                 onChange={(e) => setLastName(e.target.value)}
-                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
               />
             </div>
           </div>
@@ -170,7 +211,7 @@ const Profile = () => {
                 type="text"
                 value={phone}
                 onChange={(e) => setPhone(e.target.value)}
-                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
               />
               {!isValidPhoneNumber(phone) && phone.length > 0 && (
                 <p className="text-red-500 text-sm mt-1">
@@ -184,7 +225,7 @@ const Profile = () => {
               <select
                 value={bloodGroup}
                 onChange={(e) => setBloodGroup(e.target.value)}
-                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
               >
                 <option value="" disabled>
                   Select Blood Group
@@ -206,7 +247,7 @@ const Profile = () => {
               type="date"
               value={dob}
               onChange={(e) => setDob(e.target.value)}
-              className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+              className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
             />
           </div>
           <div className="mb-4 relative">
@@ -215,10 +256,10 @@ const Profile = () => {
               type="text"
               value={address.name}
               onChange={handleAddressChange}
-              className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA]"
+              className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
             />
             {suggestions.length > 0 && (
-              <ul className="absolute z-10 bg-[#1E2228] text-[#F8F9FA] rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto w-full">
+              <ul className="absolute z-10 bg-[#1E2228] text-[#F8F9FA] rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto w-full border border-gray-600">
                 {suggestions.map((suggestion) => (
                   <li
                     key={suggestion.id}
