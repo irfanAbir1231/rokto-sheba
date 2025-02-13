@@ -19,7 +19,12 @@ const Profile = () => {
       coordinates: [0, 0],
     },
   });
-  const [reports, setReports] = useState<{ HBsAg: string; VDRL: string; AntiHCV: string; CBC: string }>({
+  const [reports, setReports] = useState<{
+    HBsAg: string;
+    VDRL: string;
+    AntiHCV: string;
+    CBC: string;
+  }>({
     HBsAg: "",
     VDRL: "",
     AntiHCV: "",
@@ -75,13 +80,17 @@ const Profile = () => {
     <main className="mt-16 min-h-screen bg-[#0D1117]">
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-[#F8F9FA]">Profile Information</h1>
-          
+          <h1 className="text-3xl font-bold mb-8 text-[#F8F9FA]">
+            Profile Information
+          </h1>
+
           <div className="space-y-6">
             {/* Personal Information Section */}
             <section className="bg-[#161B22] rounded-lg border border-[#30363D] overflow-hidden">
               <div className="border-b border-[#30363D] bg-[#21262D] px-6 py-4">
-                <h2 className="text-xl font-semibold text-[#F8F9FA]">Personal Details</h2>
+                <h2 className="text-xl font-semibold text-[#F8F9FA]">
+                  Personal Details
+                </h2>
               </div>
               <div className="px-6 py-6">
                 <div className="flex justify-center mb-6">
@@ -94,26 +103,46 @@ const Profile = () => {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-400">Full Name</label>
-                      <p className="text-lg text-[#F8F9FA] font-semibold">{firstName} {lastName}</p>
+                      <label className="text-sm font-medium text-gray-400">
+                        Full Name
+                      </label>
+                      <p className="text-lg text-[#F8F9FA] font-semibold">
+                        {firstName} {lastName}
+                      </p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-400">Phone Number</label>
-                      <p className="text-lg text-[#F8F9FA] font-semibold">{phone}</p>
+                      <label className="text-sm font-medium text-gray-400">
+                        Phone Number
+                      </label>
+                      <p className="text-lg text-[#F8F9FA] font-semibold">
+                        {phone}
+                      </p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-400">Blood Group</label>
-                      <p className="text-lg font-semibold text-[#C1272D]">{bloodGroup}</p>
+                      <label className="text-sm font-medium text-gray-400">
+                        Blood Group
+                      </label>
+                      <p className="text-lg font-semibold text-[#C1272D]">
+                        {bloodGroup}
+                      </p>
                     </div>
                   </div>
                   <div className="space-y-4">
                     <div>
-                      <label className="text-sm font-medium text-gray-400">Date of Birth</label>
-                      <p className="text-lg text-[#F8F9FA] font-semibold">{dob}</p>
+                      <label className="text-sm font-medium text-gray-400">
+                        Date of Birth
+                      </label>
+                      <p className="text-lg text-[#F8F9FA] font-semibold">
+                        {dob}
+                      </p>
                     </div>
                     <div>
-                      <label className="text-sm font-medium text-gray-400">Address</label>
-                      <p className="text-lg text-[#F8F9FA] font-semibold">{address.name}</p>
+                      <label className="text-sm font-medium text-gray-400">
+                        Address
+                      </label>
+                      <p className="text-lg text-[#F8F9FA] font-semibold">
+                        {address.name}
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -123,13 +152,20 @@ const Profile = () => {
             {/* Medical Reports Section */}
             <section className="bg-[#161B22] rounded-lg border border-[#30363D] overflow-hidden">
               <div className="border-b border-[#30363D] bg-[#21262D] px-6 py-4">
-                <h2 className="text-xl font-semibold text-[#F8F9FA]">Medical Reports</h2>
+                <h2 className="text-xl font-semibold text-[#F8F9FA]">
+                  Medical Reports
+                </h2>
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {Object.entries(reports).map(([key, value]) => (
-                    <div key={key} className="bg-[#21262D] rounded-lg p-4 border border-[#30363D]">
-                      <label className="text-sm font-medium text-gray-400">{key} Report</label>
+                    <div
+                      key={key}
+                      className="bg-[#21262D] rounded-lg p-4 border border-[#30363D]"
+                    >
+                      <label className="text-sm font-medium text-gray-400">
+                        {key} Report
+                      </label>
                       <div className="mt-1">
                         {value ? (
                           <a
@@ -139,8 +175,18 @@ const Profile = () => {
                             className="inline-flex items-center text-[#C1272D] hover:text-[#8B1E3F] transition-colors"
                           >
                             View Report
-                            <svg className="w-4 h-4 ml-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                            <svg
+                              className="w-4 h-4 ml-2"
+                              fill="none"
+                              stroke="currentColor"
+                              viewBox="0 0 24 24"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                              />
                             </svg>
                           </a>
                         ) : (

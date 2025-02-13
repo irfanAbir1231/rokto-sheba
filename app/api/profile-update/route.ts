@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { currentUser, clerkClient } from "@clerk/nextjs/server";
 import { connectDB } from "@/lib/db/config";
 import User from "@/lib/models/User";
+import cloudinary from "@/lib/cloudinary/cloudinary";
 
 export async function POST(request: Request) {
   try {
@@ -17,29 +18,30 @@ export async function POST(request: Request) {
       );
     }
 
-    // Parse the request body
-    const body = await request.json();
-    const {
-      firstName,
-      lastName,
-      phone,
-      address,
-      nidNumber, 
-      bloodGroup,
-      dob,
-      hbsAgReport,
-      vdrlReport,
-      antiHcvReport,
-      cbcReport,
-    } = body;
+    // Parse the request body as FormData
+    const formData = await request.formData();
+
+    // Extract fields from FormData
+    const firstName = formData.get("firstName") as string;
+    const lastName = formData.get("lastName") as string;
+    const phone = formData.get("phone") as string;
+    const nidNumber = formData.get("nidNumber") as string;
+    const address = JSON.parse(formData.get("address") as string);
+    const bloodGroup = formData.get("bloodGroup") as string;
+    const dob = formData.get("dob") as string;
+    const avatar = formData.get("imageURL") as File | null;
+    const hbsAgReport = formData.get("hbsAgReport") as File | null;
+    const vdrlReport = formData.get("vdrlReport") as File | null;
+    const antiHcvReport = formData.get("antiHcvReport") as File | null;
+    const cbcReport = formData.get("cbcReport") as File | null;
 
     // Validate required fields
     if (
       !firstName ||
       !lastName ||
       !phone ||
-      !address ||
       !nidNumber ||
+      !address ||
       !bloodGroup ||
       !dob
     ) {
@@ -49,6 +51,34 @@ export async function POST(request: Request) {
       );
     }
 
+    // Upload files to Cloudinary
+    const uploadFile = async (file: File) => {
+      const arrayBuffer = await file.arrayBuffer();
+      const buffer = Buffer.from(arrayBuffer);
+      return new Promise<string>((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream(
+            { resource_type: "auto", folder: "RoktoSheba" },
+            (error, result) => {
+              if (error) {
+                reject(error);
+              } else {
+                resolve(result?.secure_url || "");
+              }
+            }
+          )
+          .end(buffer);
+      });
+    };
+
+    const avatarUrl = avatar ? await uploadFile(avatar) : user.imageUrl;
+    const hbsAgReportUrl = hbsAgReport ? await uploadFile(hbsAgReport) : null;
+    const vdrlReportUrl = vdrlReport ? await uploadFile(vdrlReport) : null;
+    const antiHcvReportUrl = antiHcvReport
+      ? await uploadFile(antiHcvReport)
+      : null;
+    const cbcReportUrl = cbcReport ? await uploadFile(cbcReport) : null;
+
     const client = await clerkClient();
 
     try {
@@ -56,6 +86,12 @@ export async function POST(request: Request) {
         firstName,
         lastName,
       });
+
+      if (avatar) {
+        await client.users.updateUserProfileImage(user.id, {
+          file: avatar,
+        });
+      }
     } catch (err) {
       console.error("Error updating Clerk user:", err);
       return NextResponse.json(
@@ -66,24 +102,24 @@ export async function POST(request: Request) {
 
     // Create or update the user in the database
     const updatedUser = await User.findOneAndUpdate(
-      { clerkID: user.id }, // Filter by Clerk User ID
+      { clerkID: user.id },
       {
         clerkID: user.id,
         firstName,
         lastName,
         phone,
-        address,
         nidNumber,
-        imageURL: user.imageUrl, // Clerk user profile image
+        address,
+        imageURL: avatarUrl,
         bloodGroup,
         dob,
         isUpdated: true,
-        hbsAgReport: hbsAgReport || null,
-        vdrlReport: vdrlReport || null,
-        antiHcvReport: antiHcvReport || null,
-        cbcReport: cbcReport || null,
+        hbsAgReport: hbsAgReportUrl,
+        vdrlReport: vdrlReportUrl,
+        antiHcvReport: antiHcvReportUrl,
+        cbcReport: cbcReportUrl,
       },
-      { upsert: true, new: true, setDefaultsOnInsert: true } // Create if not exists
+      { upsert: true, new: true, setDefaultsOnInsert: true }
     );
 
     return NextResponse.json(

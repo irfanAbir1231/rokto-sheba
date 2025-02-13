@@ -108,7 +108,7 @@ const Navbar = () => {
               >
                 <UserButton.UserProfileLink
                   label="Donation Information"
-                  url="/profile-update"
+                  url={profileUrl}
                   labelIcon={<DotIcon />}
                 />
               </UserButton>
