@@ -7,11 +7,17 @@ import { useRouter } from "next/navigation";
 const Profile = () => {
   const { user, isLoaded } = useUser();
   const router = useRouter();
+
+  // Personal Info States
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
   const [dob, setDob] = useState("");
+  const [nid, setNid] = useState("");
+  const [imageUrl, setImageUrl] = useState("");
+
+  // Address State
   const [address, setAddress] = useState({
     name: "",
     location: {
@@ -19,22 +25,18 @@ const Profile = () => {
       coordinates: [0, 0],
     },
   });
-  const [reports, setReports] = useState<{
-    HBsAg: string;
-    VDRL: string;
-    AntiHCV: string;
-    CBC: string;
-  }>({
-    HBsAg: "",
-    VDRL: "",
-    AntiHCV: "",
-    CBC: "",
-  });
+
+  // Separate States for Reports
+  const [hbsAg, setHbsAg] = useState("");
+  const [vdrl, setVdrl] = useState("");
+  const [antiHcv, setAntiHcv] = useState("");
+  const [cbc, setCbc] = useState("");
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      if (!user?.id) {
-        console.error("User ID is not available");
+      // Ensure user is loaded and user.id is available
+      if (!isLoaded || !user?.id) {
+        console.error("User ID is not available or user is not loaded");
         return;
       }
 
@@ -46,13 +48,22 @@ const Profile = () => {
             router.push("/profile-update");
             return;
           }
+
+          // Set personal details
           setFirstName(data.firstName);
           setLastName(data.lastName);
           setPhone(data.phone);
           setBloodGroup(data.bloodGroup);
           setDob(new Date(data.dob).toISOString().split("T")[0]);
+          setNid(data.nidNumber);
+          setImageUrl(data.imageURL);
           setAddress(data.address);
-          setReports(data.reports || {});
+
+          // Set individual report states
+          setHbsAg(data.hbsAgReport || "");
+          setVdrl(data.vdrlReport || "");
+          setAntiHcv(data.antiHcvReport || "");
+          setCbc(data.cbcReport || "");
         } else {
           console.error("Error fetching profile data:", response.status);
         }
@@ -61,8 +72,10 @@ const Profile = () => {
       }
     };
 
-    fetchProfileData();
-  }, [user, router]);
+    if (isLoaded && user?.id) {
+      fetchProfileData();
+    }
+  }, [user, isLoaded, router]);
 
   if (!isLoaded) {
     return (
@@ -95,7 +108,7 @@ const Profile = () => {
               <div className="px-6 py-6">
                 <div className="flex justify-center mb-6">
                   <img
-                    src={user?.imageUrl}
+                    src={imageUrl || "/default-avatar.png"}
                     alt="User Avatar"
                     className="w-24 h-24 rounded-full border-4 border-gray-300"
                   />
@@ -138,6 +151,14 @@ const Profile = () => {
                     </div>
                     <div>
                       <label className="text-sm font-medium text-gray-400">
+                        NID Number
+                      </label>
+                      <p className="text-lg text-[#F8F9FA] font-semibold">
+                        {nid}
+                      </p>
+                    </div>
+                    <div>
+                      <label className="text-sm font-medium text-gray-400">
                         Address
                       </label>
                       <p className="text-lg text-[#F8F9FA] font-semibold">
@@ -158,36 +179,28 @@ const Profile = () => {
               </div>
               <div className="p-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {Object.entries(reports).map(([key, value]) => (
+                  {[
+                    { label: "HBsAg", value: hbsAg },
+                    { label: "VDRL", value: vdrl },
+                    { label: "AntiHCV", value: antiHcv },
+                    { label: "CBC", value: cbc },
+                  ].map(({ label, value }) => (
                     <div
-                      key={key}
+                      key={label}
                       className="bg-[#21262D] rounded-lg p-4 border border-[#30363D]"
                     >
                       <label className="text-sm font-medium text-gray-400">
-                        {key} Report
+                        {label} Report
                       </label>
                       <div className="mt-1">
                         {value ? (
                           <a
-                            href={value as string}
+                            href={value}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center text-[#C1272D] hover:text-[#8B1E3F] transition-colors"
                           >
                             View Report
-                            <svg
-                              className="w-4 h-4 ml-2"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth="2"
-                                d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                              />
-                            </svg>
                           </a>
                         ) : (
                           <span className="text-gray-500">Not uploaded</span>
@@ -202,7 +215,7 @@ const Profile = () => {
             <div className="flex justify-end">
               <button
                 onClick={handleUpdateClick}
-                className="px-6 py-2 bg-[#C1272D] text-[#F8F9FA] rounded-lg font-medium hover:bg-[#8B1E3F] transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-[#C1272D] focus:ring-offset-2 focus:ring-offset-[#0D1117]"
+                className="px-6 py-2 bg-[#C1272D] text-[#F8F9FA] rounded-lg font-medium hover:bg-[#8B1E3F] transition-colors"
               >
                 Update Profile
               </button>

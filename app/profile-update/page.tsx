@@ -5,7 +5,7 @@ import { useUser } from "@clerk/clerk-react";
 import { isValidPhoneNumber } from "@/lib/utils/validator";
 import { useRouter } from "next/navigation";
 
-const Profile = () => {
+const ProfileUpdate = () => {
   const { user, isLoaded } = useUser();
   const [firstName, setFirstName] = useState(user?.firstName || "");
   const [lastName, setLastName] = useState(user?.lastName || "");
@@ -367,4 +367,4 @@ const Profile = () => {
   );
 };
 
-export default Profile;
+export default ProfileUpdate;

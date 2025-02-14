@@ -35,6 +35,7 @@ export async function GET(request: Request) {
         bloodGroup: user.bloodGroup,
         dob: user.dob,
         address: user.address,
+        imageURL: user.imageURL,
         isUpdated: user.isUpdated,
         hbsAgReport: user.hbsAgReport || null, 
         vdrlReport: user.vdrlReport || null, 

@@ -22,7 +22,7 @@ export const connectDB = async () => {
   cached.promise =
     cached.promise ||
     mongoose.connect(MONGODB_URI, {
-      dbName: "blood-donation-app",
+      dbName: "roktosheba",
       // bufferCommands: false,
       // connectTimeoutMS: 10000,
     });
