@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { isValidPhoneNumber } from "@/lib/utils/validator";
 import { useRouter } from "next/navigation";
+import { toast, ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const ProfileUpdate = () => {
   const { user, isLoaded } = useUser();
@@ -141,7 +143,13 @@ const ProfileUpdate = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidPhoneNumber(phone)) {
-      alert("Phone number must be 11 digits and start with '01'.");
+      toast.error("Phone number must be 11 digits and start with '01'.", {
+        style: {
+          backgroundColor: "#B91C1C", // Dark red background
+          color: "#FFFFFF", // White text
+          border: "1px solid #991B1B", // Slightly darker red border
+        },
+      });
       return;
     }
 
@@ -165,12 +173,34 @@ const ProfileUpdate = () => {
         body: formData,
       });
       if (response.ok) {
-        console.log("Profile updated successfully");
-        router.push("/profile"); // Redirect to /profile after saving
+        toast.success("Profile updated successfully", {
+          style: {
+            backgroundColor: "#B91C1C", // Dark red background
+            color: "#FFFFFF", // White text
+            border: "1px solid #991B1B", // Slightly darker red border
+          },
+        });
+        setTimeout(() => {
+          router.push("/profile");
+        }, 2000); // Delay navigation to allow toast to be seen
       } else {
+        toast.error("Error updating profile", {
+          style: {
+            backgroundColor: "#B91C1C", // Dark red background
+            color: "#FFFFFF", // White text
+            border: "1px solid #991B1B", // Slightly darker red border
+          },
+        });
         console.error("Error updating profile");
       }
     } catch (error) {
+      toast.error("Error occurred while updating profile", {
+        style: {
+          backgroundColor: "#B91C1C", // Dark red background
+          color: "#FFFFFF", // White text
+          border: "1px solid #991B1B", // Slightly darker red border
+        },
+      });
       console.error("Error occurred while updating profile:", error);
     }
   };
@@ -179,6 +209,19 @@ const ProfileUpdate = () => {
 
   return (
     <div className="container mx-auto p-4 sm:p-6">
+      <ToastContainer
+        position="top-right"
+        autoClose={3000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+        style={{ backgroundColor: "#0D1117", color: "#F8F9FA" }}
+      />
       <h1 className="text-2xl sm:text-3xl font-semibold mb-4 text-center">
         Profile
       </h1>
