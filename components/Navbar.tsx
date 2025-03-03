@@ -160,8 +160,10 @@ const Navbar = () => {
                     appearance: {
                       elements: {
                         userProfile: {
-                          // Customize the user profile modal if needed
+                          
+                        
                         },
+                        
                       },
                     },
                   }}
@@ -236,3 +238,4 @@ const Navbar = () => {
 };
 
 export default Navbar;
+
