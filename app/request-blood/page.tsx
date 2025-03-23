@@ -57,7 +57,6 @@ export default function RequestBlood() {
   const [patientImage, setPatientImage] = useState<File | null>(null);
   const [medicalReport, setMedicalReport] = useState<File | null>(null);
   const [loading, setLoading] = useState(false);
-  const [showCalendar, setShowCalendar] = useState(false);
   const [suggestions, setSuggestions] = useState<BarikoiSuggestion[]>([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [isSearching, setIsSearching] = useState(false);
@@ -118,12 +117,6 @@ export default function RequestBlood() {
       if (e.target.files?.[0]) setter(e.target.files[0]);
     };
 
-  const handleDateChange = (date: Date | undefined) => {
-    if (date) {
-      setFormData({ ...formData, neededBy: date });
-    }
-    setShowCalendar(false);
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -138,7 +131,7 @@ export default function RequestBlood() {
         if (key === "location") {
           formPayload.append(key, JSON.stringify(value));
         } else {
-          formPayload.append(key, value.toString());
+          formPayload.append(key, value ? value.toString() : "");
         }
       });
 
