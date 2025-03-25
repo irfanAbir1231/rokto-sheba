@@ -1,44 +1,37 @@
 "use client";
-
 import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useRouter } from "next/navigation";
+import { motion } from "framer-motion";
+import { Loader2, Edit3, FileText, Droplet, User, Phone, Calendar, MapPin, IdCard } from "lucide-react";
 
 const Profile = () => {
   const { user, isLoaded } = useUser();
   const router = useRouter();
 
-  // Personal Info States
-  const [firstName, setFirstName] = useState("");
-  const [lastName, setLastName] = useState("");
-  const [phone, setPhone] = useState("");
-  const [bloodGroup, setBloodGroup] = useState("");
-  const [dob, setDob] = useState("");
-  const [nid, setNid] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
-
-  // Address State
-  const [address, setAddress] = useState({
-    name: "",
-    location: {
-      type: "Point",
-      coordinates: [0, 0],
-    },
+  // State initialization
+  const [profileData, setProfileData] = useState({
+    firstName: "",
+    lastName: "",
+    phone: "",
+    bloodGroup: "",
+    dob: "",
+    nid: "",
+    imageUrl: "",
+    address: { name: "", location: { type: "Point", coordinates: [0, 0] } },
+    reports: { hbsAg: "", vdrl: "", antiHcv: "", cbc: "" }
   });
 
-  // Separate States for Reports
-  const [hbsAg, setHbsAg] = useState("");
-  const [vdrl, setVdrl] = useState("");
-  const [antiHcv, setAntiHcv] = useState("");
-  const [cbc, setCbc] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 }
+  };
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      // Ensure user is loaded and user.id is available
-      if (!isLoaded || !user?.id) {
-        console.error("User ID is not available or user is not loaded");
-        return;
-      }
+      if (!isLoaded || !user?.id) return;
 
       try {
         const response = await fetch(`/api/profile?clerkID=${user.id}`);
@@ -49,182 +42,175 @@ const Profile = () => {
             return;
           }
 
-          // Set personal details
-          setFirstName(data.firstName);
-          setLastName(data.lastName);
-          setPhone(data.phone);
-          setBloodGroup(data.bloodGroup);
-          setDob(new Date(data.dob).toISOString().split("T")[0]);
-          setNid(data.nidNumber);
-          setImageUrl(data.imageURL);
-          setAddress(data.address);
-
-          // Set individual report states
-          setHbsAg(data.hbsAgReport || "");
-          setVdrl(data.vdrlReport || "");
-          setAntiHcv(data.antiHcvReport || "");
-          setCbc(data.cbcReport || "");
-        } else {
-          console.error("Error fetching profile data:", response.status);
+          setProfileData({
+            firstName: data.firstName,
+            lastName: data.lastName,
+            phone: data.phone,
+            bloodGroup: data.bloodGroup,
+            dob: new Date(data.dob).toLocaleDateString(),
+            nid: data.nidNumber,
+            imageUrl: data.imageURL,
+            address: data.address,
+            reports: {
+              hbsAg: data.hbsAgReport,
+              vdrl: data.vdrlReport,
+              antiHcv: data.antiHcvReport,
+              cbc: data.cbcReport
+            }
+          });
         }
       } catch (error) {
         console.error("Error fetching profile data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    if (isLoaded && user?.id) {
-      fetchProfileData();
-    }
+    fetchProfileData();
   }, [user, isLoaded, router]);
 
-  if (!isLoaded) {
+  if (!isLoaded || loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#0D1117]">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-[#C1272D]"></div>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a]">
+        <Loader2 className="w-12 h-12 text-red-500 animate-spin" />
       </div>
     );
   }
 
-  const handleUpdateClick = () => {
-    router.push("/profile-update");
-  };
-
   return (
-    <main className="mt-16 min-h-screen bg-[#0D1117]">
-      <div className="container mx-auto px-4 py-8">
-        <div className="max-w-4xl mx-auto">
-          <h1 className="text-3xl font-bold mb-8 text-[#F8F9FA]">
-            Profile Information
+    <motion.main 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] pt-24"
+    >
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <motion.div
+          initial="hidden"
+          animate="visible"
+          variants={cardVariants}
+          className="flex items-center justify-between mb-12"
+        >
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
+            Profile Overview
           </h1>
+          <button
+            onClick={() => router.push("/profile-update")}
+            className="flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-red-600 to-pink-600 rounded-xl hover:scale-105 transition-transform"
+          >
+            <Edit3 className="w-5 h-5" />
+            <span className="font-medium">Update Profile</span>
+          </button>
+        </motion.div>
 
-          <div className="space-y-6">
-            {/* Personal Information Section */}
-            <section className="bg-[#161B22] rounded-lg border border-[#30363D] overflow-hidden">
-              <div className="border-b border-[#30363D] bg-[#21262D] px-6 py-4">
-                <h2 className="text-xl font-semibold text-[#F8F9FA]">
-                  Personal Details
-                </h2>
-              </div>
-              <div className="px-6 py-6">
-                <div className="flex justify-center mb-6">
-                  <img
-                    src={imageUrl || "/default-avatar.png"}
-                    alt="User Avatar"
-                    className="w-24 h-24 rounded-full border-4 border-gray-300"
-                  />
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-400">
-                        Full Name
-                      </label>
-                      <p className="text-lg text-[#F8F9FA] font-semibold">
-                        {firstName} {lastName}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-400">
-                        Phone Number
-                      </label>
-                      <p className="text-lg text-[#F8F9FA] font-semibold">
-                        {phone}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-400">
-                        Blood Group
-                      </label>
-                      <p className="text-lg font-semibold text-[#C1272D]">
-                        {bloodGroup}
-                      </p>
-                    </div>
-                  </div>
-                  <div className="space-y-4">
-                    <div>
-                      <label className="text-sm font-medium text-gray-400">
-                        Date of Birth
-                      </label>
-                      <p className="text-lg text-[#F8F9FA] font-semibold">
-                        {dob}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-400">
-                        NID Number
-                      </label>
-                      <p className="text-lg text-[#F8F9FA] font-semibold">
-                        {nid}
-                      </p>
-                    </div>
-                    <div>
-                      <label className="text-sm font-medium text-gray-400">
-                        Address
-                      </label>
-                      <p className="text-lg text-[#F8F9FA] font-semibold">
-                        {address.name}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </section>
-
-            {/* Medical Reports Section */}
-            <section className="bg-[#161B22] rounded-lg border border-[#30363D] overflow-hidden">
-              <div className="border-b border-[#30363D] bg-[#21262D] px-6 py-4">
-                <h2 className="text-xl font-semibold text-[#F8F9FA]">
-                  Medical Reports
-                </h2>
-              </div>
-              <div className="p-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  {[
-                    { label: "HBsAg", value: hbsAg },
-                    { label: "VDRL", value: vdrl },
-                    { label: "AntiHCV", value: antiHcv },
-                    { label: "CBC", value: cbc },
-                  ].map(({ label, value }) => (
-                    <div
-                      key={label}
-                      className="bg-[#21262D] rounded-lg p-4 border border-[#30363D]"
-                    >
-                      <label className="text-sm font-medium text-gray-400">
-                        {label} Report
-                      </label>
-                      <div className="mt-1">
-                        {value ? (
-                          <a
-                            href={value}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center text-[#C1272D] hover:text-[#8B1E3F] transition-colors"
-                          >
-                            View Report
-                          </a>
-                        ) : (
-                          <span className="text-gray-500">Not uploaded</span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
-            <div className="flex justify-end">
-              <button
-                onClick={handleUpdateClick}
-                className="px-6 py-2 bg-[#C1272D] text-[#F8F9FA] rounded-lg font-medium hover:bg-[#8B1E3F] transition-colors"
-              >
-                Update Profile
-              </button>
+        {/* Profile Card */}
+        <motion.div
+          variants={cardVariants}
+          className="bg-[#161B22]/90 backdrop-blur-lg rounded-2xl border border-gray-800/50 shadow-2xl overflow-hidden mb-12"
+        >
+          <div className="flex flex-col md:flex-row items-center p-8 gap-8">
+            <div className="relative group w-32 h-32 shrink-0">
+              <img
+                src={profileData.imageUrl || "/default-avatar.png"}
+                alt="Profile"
+                className="w-full h-full rounded-2xl object-cover border-4 border-gray-800/50 group-hover:border-red-500 transition-colors"
+              />
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
+              <DetailItem icon={<User />} label="Full Name">
+                {profileData.firstName} {profileData.lastName}
+              </DetailItem>
+              <DetailItem icon={<Phone />} label="Phone">
+                {profileData.phone}
+              </DetailItem>
+              <DetailItem icon={<Droplet />} label="Blood Group">
+                <span className="text-red-500 font-semibold">{profileData.bloodGroup}</span>
+              </DetailItem>
+              <DetailItem icon={<Calendar />} label="Date of Birth">
+                {profileData.dob}
+              </DetailItem>
+              <DetailItem icon={<IdCard />} label="NID Number">
+                {profileData.nid}
+              </DetailItem>
+              <DetailItem icon={<MapPin />} label="Address">
+                {profileData.address.name}
+              </DetailItem>
             </div>
           </div>
-        </div>
+        </motion.div>
+
+        {/* Medical Reports */}
+        <motion.div
+          variants={cardVariants}
+          className="bg-[#161B22]/90 backdrop-blur-lg rounded-2xl border border-gray-800/50 shadow-2xl p-8"
+        >
+          <h2 className="text-2xl font-semibold mb-8 flex items-center gap-3">
+            <FileText className="text-red-500" />
+            <span className="bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
+              Medical Reports
+            </span>
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <ReportCard 
+              title="HBsAg" 
+              url={profileData.reports.hbsAg} 
+              className="hover:border-red-500"
+            />
+            <ReportCard 
+              title="VDRL" 
+              url={profileData.reports.vdrl} 
+              className="hover:border-pink-500"
+            />
+            <ReportCard 
+              title="AntiHCV" 
+              url={profileData.reports.antiHcv} 
+              className="hover:border-purple-500"
+            />
+            <ReportCard 
+              title="CBC" 
+              url={profileData.reports.cbc} 
+              className="hover:border-blue-500"
+            />
+          </div>
+        </motion.div>
       </div>
-    </main>
+    </motion.main>
   );
 };
+
+const DetailItem = ({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) => (
+  <div className="flex items-start gap-4">
+    <div className="p-2 bg-gray-900/50 rounded-lg text-red-500">{icon}</div>
+    <div>
+      <p className="text-sm text-gray-400 mb-1">{label}</p>
+      <p className="text-gray-200 font-medium">{children || "Not provided"}</p>
+    </div>
+  </div>
+);
+
+const ReportCard = ({ title, url, className }: { title: string; url: string; className?: string }) => (
+  <motion.div
+    whileHover={{ scale: 1.03 }}
+    className={`bg-gray-900/50 rounded-xl p-4 border border-gray-800/50 transition-all ${className}`}
+  >
+    <h3 className="text-lg font-semibold mb-2 text-gray-200">{title}</h3>
+    <div className="h-12 flex items-center">
+      {url ? (
+        <a
+          href={url}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="inline-flex items-center gap-2 text-red-500 hover:text-red-400"
+        >
+          <FileText className="w-5 h-5" />
+          <span>View Report</span>
+        </a>
+      ) : (
+        <span className="text-gray-500">Not uploaded</span>
+      )}
+    </div>
+  </motion.div>
+);
 
 export default Profile;
