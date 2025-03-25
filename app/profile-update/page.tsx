@@ -1,86 +1,110 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
-import { isValidPhoneNumber } from "@/lib/utils/validator";
+import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
-import { toast, ToastContainer } from "react-toastify";
+import { toast } from "react-toastify";
+import {
+  Loader2,
+  UploadCloud,
+  X,
+  MapPin,
+  Droplet,
+  User,
+  Phone,
+  CalendarDays,
+  FileText,
+  ClipboardList,
+} from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
+
+interface Suggestion {
+  id: string;
+  address: string;
+  city: string;
+  longitude: number;
+  latitude: number;
+}
 
 const ProfileUpdate = () => {
   const { user, isLoaded } = useUser();
-  const [firstName, setFirstName] = useState(user?.firstName || "");
-  const [lastName, setLastName] = useState(user?.lastName || "");
+  const router = useRouter();
+
+  // Personal Information
+  const [firstName, setFirstName] = useState("");
+  const [lastName, setLastName] = useState("");
   const [phone, setPhone] = useState("");
   const [nidNumber, setNidNumber] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
   const [dob, setDob] = useState("");
+
+  // Address Information
   const [address, setAddress] = useState({
     name: "",
-    location: {
-      type: "Point",
-      coordinates: [0, 0], // Default coordinates
-    },
+    location: { type: "Point", coordinates: [0, 0] },
   });
-  const [isUpdated, setIsUpdated] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [avatar, setAvatar] = useState<File | null>(null);
-  const [avatarPreview, setAvatarPreview] = useState(user?.imageUrl || "");
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+
+  // Medical Reports
   const [hbsAgReport, setHbsAgReport] = useState<File | null>(null);
   const [vdrlReport, setVdrlReport] = useState<File | null>(null);
   const [antiHcvReport, setAntiHcvReport] = useState<File | null>(null);
   const [cbcReport, setCbcReport] = useState<File | null>(null);
-  const router = useRouter();
 
-  interface Suggestion {
-    id: string;
-    address: string;
-    longitude: number;
-    latitude: number;
-  }
-  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
+  // Profile Image
+  const [avatar, setAvatar] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState("");
+
+  // Loading States
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 20 },
+    visible: { opacity: 1, y: 0 },
+  };
+
+  const inputAnimations = {
+    hidden: { opacity: 0, x: -10 },
+    visible: { opacity: 1, x: 0 },
+  };
+
+  const isValidPhoneNumber = (phone: string) => /^01\d{9}$/.test(phone);
   const isFormValid =
     firstName && lastName && phone && bloodGroup && dob && address.name;
 
-  // Fetch user profile data from the database
   useEffect(() => {
     if (!isLoaded || !user) return;
 
     const fetchProfile = async () => {
       try {
         const response = await fetch(`/api/profile?clerkID=${user.id}`);
-        const data = await response.json();
-
-        if (data && response.ok && data.isUpdated) {
-          const formattedDob = new Date(data.dob).toISOString().split("T")[0];
-          setFirstName(data.firstName);
-          setLastName(data.lastName);
-          setPhone(data.phone);
-          setNidNumber(data.nidNumber);
-          setBloodGroup(data.bloodGroup);
-          setDob(formattedDob);
-          setAddress(data.address);
-          setAvatarPreview(data.imageURL || user.imageUrl);
-          setIsUpdated(true);
-        } else {
-          console.log("User profile not registered in database yet");
+        if (response.ok) {
+          const data = await response.json();
+          if (data?.isUpdated) {
+            setFirstName(data.firstName);
+            setLastName(data.lastName);
+            setPhone(data.phone);
+            setNidNumber(data.nidNumber);
+            setBloodGroup(data.bloodGroup);
+            setDob(new Date(data.dob).toISOString().split("T")[0]);
+            setAddress(data.address);
+            setAvatarPreview(data.imageURL || user.imageUrl);
+          }
         }
       } catch (error) {
-        console.error("Error fetching profile data:", error);
+        toast.error("Failed to load profile data");
       } finally {
-        setIsLoading(false); // Set loading to false after fetching
+        setIsLoading(false);
       }
     };
 
     fetchProfile();
   }, [isLoaded, user]);
 
-  // Function to fetch autocomplete suggestions from BariKoi
   const fetchSuggestions = async (query: string) => {
-    if (query.length < 3) {
-      setSuggestions([]);
-      return;
-    }
+    if (query.length < 3) return setSuggestions([]);
 
     try {
       const response = await fetch(
@@ -89,24 +113,19 @@ const ProfileUpdate = () => {
       const data = await response.json();
       setSuggestions(data.places || []);
     } catch (error) {
-      console.error("Error fetching address suggestions:", error);
+      console.error("Location search failed:", error);
     }
   };
 
-  // Handle address input change
   const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
-    setAddress((prevAddress) => ({
-      ...prevAddress,
-      name: value,
-    }));
+    setAddress((prev) => ({ ...prev, name: value }));
     fetchSuggestions(value);
   };
 
-  // Handle address selection from suggestions
   const handleSuggestionClick = (suggestion: Suggestion) => {
     setAddress({
-      name: suggestion.address,
+      name: `${suggestion.address}, ${suggestion.city}`,
       location: {
         type: "Point",
         coordinates: [suggestion.longitude, suggestion.latitude],
@@ -115,44 +134,30 @@ const ProfileUpdate = () => {
     setSuggestions([]);
   };
 
-  // Handle avatar file change
   const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setAvatar(file);
-      setAvatarPreview(URL.createObjectURL(file)); // Preview the new avatar
+      setAvatarPreview(URL.createObjectURL(file));
     }
   };
 
-  // Handle report file changes
   const handleReportChange = (
     e: React.ChangeEvent<HTMLInputElement>,
-    setReport: React.Dispatch<React.SetStateAction<File | null>>
+    setter: React.Dispatch<React.SetStateAction<File | null>>
   ) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setReport(file);
-    }
-  };
-
-  // Handle NID Number input change
-  const handleNidNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setNidNumber(e.target.value);
+    if (file) setter(file);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValidPhoneNumber(phone)) {
-      toast.error("Phone number must be 11 digits and start with '01'.", {
-        style: {
-          backgroundColor: "#B91C1C", // Dark red background
-          color: "#FFFFFF", // White text
-          border: "1px solid #991B1B", // Slightly darker red border
-        },
-      });
+      toast.error("Phone must be 11 digits starting with 01");
       return;
     }
 
+    setIsSubmitting(true);
     const formData = new FormData();
     formData.append("firstName", firstName);
     formData.append("lastName", lastName);
@@ -172,241 +177,333 @@ const ProfileUpdate = () => {
         method: "POST",
         body: formData,
       });
+
       if (response.ok) {
-        toast.success("Profile updated successfully", {
-          style: {
-            backgroundColor: "#B91C1C", // Dark red background
-            color: "#FFFFFF", // White text
-            border: "1px solid #991B1B", // Slightly darker red border
-          },
-        });
-        setTimeout(() => {
-          router.push("/profile");
-        }, 2000); // Delay navigation to allow toast to be seen
+        toast.success("Profile updated successfully");
+        setTimeout(() => router.push("/profile"), 2000);
       } else {
-        toast.error("Error updating profile", {
-          style: {
-            backgroundColor: "#B91C1C", // Dark red background
-            color: "#FFFFFF", // White text
-            border: "1px solid #991B1B", // Slightly darker red border
-          },
-        });
-        console.error("Error updating profile");
+        throw new Error("Update failed");
       }
     } catch (error) {
-      toast.error("Error occurred while updating profile", {
-        style: {
-          backgroundColor: "#B91C1C", // Dark red background
-          color: "#FFFFFF", // White text
-          border: "1px solid #991B1B", // Slightly darker red border
-        },
-      });
-      console.error("Error occurred while updating profile:", error);
+      toast.error("Failed to update profile");
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
-  if (!isLoaded || isLoading) return <div>Loading...</div>;
+  if (!isLoaded || isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a]">
+        <Loader2 className="w-12 h-12 text-red-500 animate-spin" />
+      </div>
+    );
+  }
 
   return (
-    <div className="container mx-auto p-4 sm:p-6">
-      <ToastContainer
-        position="top-right"
-        autoClose={3000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-        theme="colored"
-        style={{ backgroundColor: "#0D1117", color: "#F8F9FA" }}
-      />
-      <h1 className="text-2xl sm:text-3xl font-semibold mb-4 text-center">
-        Profile
-      </h1>
-      <div className="flex justify-center mb-4">
-        <div className="relative">
-          <img
-            src={avatarPreview}
-            alt="User Avatar"
-            className="w-24 h-24 rounded-full object-cover border-4 border-gray-300"
-          />
-          <input
-            type="file"
-            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-            onChange={handleAvatarChange}
-          />
-        </div>
-      </div>
-      <div className="bg-[#0D1117] p-4 sm:p-6 rounded-lg shadow-lg text-[#F8F9FA]">
-        <form onSubmit={handleSubmit}>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium">First Name *:</label>
-              <input
-                type="text"
-                value={firstName}
-                onChange={(e) => setFirstName(e.target.value)}
-                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">Last Name *:</label>
-              <input
-                type="text"
-                value={lastName}
-                onChange={(e) => setLastName(e.target.value)}
-                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
-                required
-              />
-            </div>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
-            <div>
-              <label className="block text-sm font-medium">Phone *:</label>
-              <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
-                required
-              />
-              {!isValidPhoneNumber(phone) && phone.length > 0 && (
-                <p className="text-red-500 text-sm mt-1">
-                  Phone number must start with &apos;01&apos; and contain 11
-                  digits.
-                </p>
-              )}
-            </div>
-            <div>
-              <label className="block text-sm font-medium">NID Number *:</label>
-              <input
-                type="text"
-                value={nidNumber}
-                onChange={handleNidNumberChange}
-                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium">
-                Blood Group *:
-              </label>
-              <select
-                value={bloodGroup}
-                onChange={(e) => setBloodGroup(e.target.value)}
-                className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
-                required
-              >
-                <option value="" disabled>
-                  Select Blood Group
-                </option>
-                <option value="A+">A+</option>
-                <option value="A-">A-</option>
-                <option value="B+">B+</option>
-                <option value="B-">B-</option>
-                <option value="AB+">AB+</option>
-                <option value="AB-">AB-</option>
-                <option value="O+">O+</option>
-                <option value="O-">O-</option>
-              </select>
-            </div>
-          </div>
-          <div className="mb-4">
-            <label className="block text-sm font-medium">
-              Date of Birth *:
-            </label>
-            <input
-              type="date"
-              value={dob}
-              onChange={(e) => setDob(e.target.value)}
-              className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
-              required
-            />
-          </div>
-          <div className="mb-4 relative">
-            <label className="block text-sm font-medium">Address *:</label>
-            <input
-              type="text"
-              value={address.name}
-              onChange={handleAddressChange}
-              className="w-full p-2 rounded-lg bg-[#1E2228] text-[#F8F9FA] border border-gray-600"
-              required
-            />
-            {suggestions.length > 0 && (
-              <ul className="absolute z-10 bg-[#1E2228] text-[#F8F9FA] rounded-lg shadow-lg mt-1 max-h-40 overflow-y-auto w-full border border-gray-600">
-                {suggestions.map((suggestion) => (
-                  <li
-                    key={suggestion.id}
-                    className="p-2 hover:bg-[#0D1117] cursor-pointer"
-                    onClick={() => handleSuggestionClick(suggestion)}
-                  >
-                    {suggestion.address}
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
-          <div className="mb-4">
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">HBsAg Report</span>
-              </div>
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      className="min-h-screen bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] pt-24"
+    >
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {/* Header Section */}
+        <motion.div
+          variants={cardVariants}
+          className="flex flex-col sm:flex-row items-center justify-between mb-12 gap-6"
+        >
+          <h1 className="text-3xl font-bold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent">
+            Update Profile
+          </h1>
+
+          <motion.div whileHover={{ scale: 1.05 }} className="relative group">
+            <label className="cursor-pointer">
               <input
                 type="file"
-                className="file-input file-input-bordered w-full max-w-xs"
-                onChange={(e) => handleReportChange(e, setHbsAgReport)}
+                onChange={handleAvatarChange}
+                className="hidden"
               />
-            </label>
-          </div>
-          <div className="mb-4">
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">VDRL Report</span>
+              <div className="relative w-32 h-32 rounded-full border-4 border-gray-700 group-hover:border-red-500 transition-all">
+                <img
+                  src={avatarPreview}
+                  alt="Profile"
+                  className="w-full h-full rounded-full object-cover"
+                />
+                <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                  <UploadCloud className="w-6 h-6 text-white" />
+                </div>
               </div>
-              <input
-                type="file"
-                className="file-input file-input-bordered w-full max-w-xs"
-                onChange={(e) => handleReportChange(e, setVdrlReport)}
-              />
             </label>
-          </div>
-          <div className="mb-4">
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">Anti HCV Report</span>
-              </div>
-              <input
-                type="file"
-                className="file-input file-input-bordered w-full max-w-xs"
-                onChange={(e) => handleReportChange(e, setAntiHcvReport)}
-              />
-            </label>
-          </div>
-          <div className="mb-4">
-            <label className="form-control w-full max-w-xs">
-              <div className="label">
-                <span className="label-text">CBC Report</span>
-              </div>
-              <input
-                type="file"
-                className="file-input file-input-bordered w-full max-w-xs"
-                onChange={(e) => handleReportChange(e, setCbcReport)}
-              />
-            </label>
-          </div>
-          <button
-            type="submit"
-            className="btn bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F] transition duration-300 w-full md:w-auto"
-            disabled={!isFormValid}
+          </motion.div>
+        </motion.div>
+
+        {/* Main Form */}
+        <motion.form
+          onSubmit={handleSubmit}
+          variants={cardVariants}
+          className="space-y-8"
+        >
+          {/* Personal Information Section */}
+          <motion.div
+            variants={cardVariants}
+            className="bg-[#161B22]/90 backdrop-blur-lg rounded-2xl border border-gray-800/50 p-8"
           >
-            Save
-          </button>
-        </form>
+            <h2 className="text-xl font-semibold mb-6 flex items-center gap-3 text-red-500">
+              <User className="w-6 h-6" />
+              Personal Information
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* First Name */}
+              <motion.div variants={inputAnimations}>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  First Name
+                </label>
+                <input
+                  type="text"
+                  value={firstName}
+                  onChange={(e) => setFirstName(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-gray-900/50 border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all"
+                  required
+                />
+              </motion.div>
+
+              {/* Last Name */}
+              <motion.div variants={inputAnimations}>
+                <label className="block text-sm font-medium text-gray-400 mb-2">
+                  Last Name
+                </label>
+                <input
+                  type="text"
+                  value={lastName}
+                  onChange={(e) => setLastName(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-gray-900/50 border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all"
+                  required
+                />
+              </motion.div>
+
+              {/* Phone Number */}
+              <motion.div variants={inputAnimations}>
+                <label className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                  <Phone className="w-4 h-4" />
+                  Phone Number
+                </label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    value={phone}
+                    onChange={(e) => setPhone(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-gray-900/50 border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all pr-12"
+                    required
+                  />
+                  {!isValidPhoneNumber(phone) && phone.length > 0 && (
+                    <X className="w-5 h-5 text-red-500 absolute right-3 top-3.5" />
+                  )}
+                </div>
+                {!isValidPhoneNumber(phone) && phone.length > 0 && (
+                  <p className="text-red-500 text-sm mt-2">
+                    Must start with 01 and have 11 digits
+                  </p>
+                )}
+              </motion.div>
+
+              {/* NID Number */}
+              <motion.div variants={inputAnimations}>
+                <label className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                  <ClipboardList className="w-4 h-4" />
+                  NID Number
+                </label>
+                <input
+                  type="text"
+                  value={nidNumber}
+                  onChange={(e) => setNidNumber(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-gray-900/50 border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all pr-12"
+                  required
+                />
+              </motion.div>
+
+              {/* Blood Group */}
+              <motion.div variants={inputAnimations}>
+                <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                  <Droplet className="w-4 h-4" />
+                  Blood Group
+                </label>
+                <div className="relative">
+                  <select
+                    value={bloodGroup}
+                    onChange={(e) => setBloodGroup(e.target.value)}
+                    className="w-full p-3 rounded-xl bg-gray-900/50 border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all appearance-none pr-12"
+                  >
+                    <option value="" disabled>
+                      Select Blood Group
+                    </option>
+                    {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
+                      (group) => (
+                        <option
+                          key={group}
+                          value={group}
+                          className="bg-gray-800"
+                        >
+                          {group}
+                        </option>
+                      )
+                    )}
+                  </select>
+                </div>
+              </motion.div>
+
+              {/* Date of Birth */}
+              <motion.div variants={inputAnimations}>
+                <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                  <CalendarDays className="w-4 h-4" />
+                  Date of Birth
+                </label>
+                <input
+                  type="date"
+                  value={dob}
+                  onChange={(e) => setDob(e.target.value)}
+                  className="w-full p-3 rounded-xl bg-gray-900/50 border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all pr-12"
+                  required
+                />
+              </motion.div>
+            </div>
+          </motion.div>
+
+          {/* Address Section */}
+          <motion.div
+            variants={cardVariants}
+            className="bg-[#161B22]/90 backdrop-blur-lg rounded-2xl border border-gray-800/50 p-8"
+          >
+            <h2 className="text-xl font-semibold mb-6 flex items-center gap-3 text-red-500">
+              <MapPin className="w-6 h-6" />
+              Address Information
+            </h2>
+
+            <motion.div variants={inputAnimations} className="relative">
+              <label className="block text-sm font-medium text-gray-400 mb-2">
+                Search Address
+              </label>
+              <input
+                type="text"
+                value={address.name}
+                onChange={handleAddressChange}
+                className="w-full p-3 rounded-xl bg-gray-900/50 border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all"
+                required
+              />
+              {suggestions.length > 0 && (
+                <ul className="absolute z-10 mt-2 w-full bg-gray-900/80 backdrop-blur-lg rounded-xl border border-gray-700 shadow-xl max-h-60 overflow-y-auto">
+                  {suggestions.map((suggestion) => (
+                    <li
+                      key={suggestion.id}
+                      onClick={() => handleSuggestionClick(suggestion)}
+                      className="p-3 hover:bg-gray-800/50 cursor-pointer transition-colors border-b border-gray-800 last:border-0"
+                    >
+                      <div className="text-sm">{suggestion.address}</div>
+                      <div className="text-xs text-gray-400 mt-1">
+                        {suggestion.city}
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </motion.div>
+          </motion.div>
+
+          {/* Medical Reports Section */}
+          <motion.div
+            variants={cardVariants}
+            className="bg-[#161B22]/90 backdrop-blur-lg rounded-2xl border border-gray-800/50 p-8"
+          >
+            <h2 className="text-xl font-semibold mb-6 flex items-center gap-3 text-red-500">
+              <FileText className="w-6 h-6" />
+              Medical Reports
+            </h2>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {[
+                {
+                  label: "HBsAg Report",
+                  state: hbsAgReport,
+                  setter: setHbsAgReport,
+                },
+                {
+                  label: "VDRL Report",
+                  state: vdrlReport,
+                  setter: setVdrlReport,
+                },
+                {
+                  label: "Anti HCV Report",
+                  state: antiHcvReport,
+                  setter: setAntiHcvReport,
+                },
+                { label: "CBC Report", state: cbcReport, setter: setCbcReport },
+              ].map(({ label, state, setter }) => (
+                <motion.div
+                  key={label}
+                  variants={inputAnimations}
+                  className="relative group"
+                >
+                  <label className="block text-sm font-medium text-gray-400 mb-2">
+                    {label}
+                  </label>
+                  <div className="border-2 border-dashed border-gray-700 rounded-xl p-6 text-center hover:border-red-500 transition-colors">
+                    <input
+                      type="file"
+                      onChange={(e) => handleReportChange(e, setter)}
+                      className="hidden"
+                      id={label}
+                    />
+                    <label
+                      htmlFor={label}
+                      className="cursor-pointer flex flex-col items-center"
+                    >
+                      <UploadCloud className="w-8 h-8 text-gray-500 mb-2 group-hover:text-red-500 transition-colors" />
+                      <span className="text-gray-400 group-hover:text-white transition-colors">
+                        {state ? "Change File" : "Upload File"}
+                      </span>
+                      {state && (
+                        <div className="mt-2 text-sm text-gray-500 group-hover:text-gray-300 truncate w-full">
+                          {state.name}
+                        </div>
+                      )}
+                    </label>
+                    {state && (
+                      <button
+                        type="button"
+                        onClick={() => setter(null)}
+                        className="absolute top-2 right-2 p-1 text-gray-500 hover:text-red-500"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </motion.div>
+
+          {/* Submit Button */}
+          <motion.div variants={cardVariants} className="text-center">
+            <button
+              type="submit"
+              disabled={!isFormValid || isSubmitting}
+              className="px-8 py-3 bg-gradient-to-r from-red-600 to-pink-600 rounded-xl font-medium hover:scale-105 transition-transform disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+            >
+              {isSubmitting ? (
+                <>
+                  <Loader2 className="w-5 h-5 animate-spin" />
+                  Saving...
+                </>
+              ) : (
+                <>
+                  <FileText className="w-5 h-5" />
+                  Save Profile Updates
+                </>
+              )}
+            </button>
+          </motion.div>
+        </motion.form>
       </div>
-    </div>
+    </motion.div>
   );
 };
 
