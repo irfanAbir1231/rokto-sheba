@@ -99,3 +99,78 @@ export const POST = async (req: NextRequest) => {
     );
   }
 };
+
+
+export const GET = async (req: NextRequest) => {
+  try {
+    await connectDB();
+
+    const { searchParams } = new URL(req.url);
+
+    // Base query
+    let query = BloodRequest.find();
+
+    // 1. Blood Group Filter
+    const bloodGroup = searchParams.get("bloodGroup");
+    if (bloodGroup) {
+      query = query.where("bloodGroup").equals(bloodGroup);
+    }
+
+    // 2. Quantity Filter
+    const minBags = searchParams.get("minBags");
+    const maxBags = searchParams.get("maxBags");
+    if (minBags) query = query.where("bagsNeeded").gte(Number(minBags));
+    if (maxBags) query = query.where("bagsNeeded").lte(Number(maxBags));
+
+    // 3. Location-based Filter
+    const lat = searchParams.get("lat");
+    const lng = searchParams.get("lng");
+    const radius = searchParams.get("radius");
+    if (lat && lng && radius) {
+      query = query.where("location.coordinates").near({
+        center: {
+          type: "Point",
+          coordinates: [Number(lng), Number(lat)],
+        },
+        maxDistance: Number(radius),
+        spherical: true,
+      });
+    }
+
+    // 4. Date Filters
+    const minDate = searchParams.get("minDate");
+    const maxDate = searchParams.get("maxDate");
+    if (minDate)
+      query = query.where("neededBy").gte(new Date(minDate).getTime());
+    if (maxDate)
+      query = query.where("neededBy").lte(new Date(maxDate).getTime());
+
+    // 5. Sorting
+    const sortBy = searchParams.get("sortBy") || "createdAt";
+    const sortOrder = searchParams.get("sortOrder") === "asc" ? 1 : -1;
+
+    const sortOptions: { [key: string]: 1 | -1 } = {};
+    const allowedSortFields = ["createdAt", "neededBy", "bagsNeeded"];
+
+    if (allowedSortFields.includes(sortBy)) {
+      sortOptions[sortBy] = sortOrder;
+      // Secondary sort for urgency
+      if (sortBy === "neededBy") {
+        sortOptions.createdAt = -1;
+      }
+    }
+
+    query = query.sort(sortOptions);
+
+    // Execute query
+    const requests = await query.select("-__v -updatedAt").lean().exec();
+
+    return NextResponse.json(requests, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching blood requests:", error);
+    return NextResponse.json(
+      { message: "Failed to fetch blood requests" },
+      { status: 500 }
+    );
+  }
+};

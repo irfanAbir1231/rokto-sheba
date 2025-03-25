@@ -1,166 +1,389 @@
 "use client";
+import { useEffect, useState, useCallback } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import {
+  Loader2,
+  SlidersHorizontal,
+  MapPin,
+  CalendarDays,
+  Phone,
+} from "lucide-react";
+import { format, parseISO } from "date-fns";
+import { BloodRequest } from "@/types/models";
+import { cn } from "@/lib/utils";
 
-import { useState, useEffect } from "react";
-import { motion } from "framer-motion";
+type LocationSuggestion = {
+  id: number;
+  address: string;
+  city: string;
+  latitude: number;
+  longitude: number;
+};
 
-export default function RecentRequests() {
-  const [city, setCity] = useState("");
-  const [bloodGroup, setBloodGroup] = useState("");
-  const [gender, setGender] = useState("");
+const RecentRequests = () => {
+  const [requests, setRequests] = useState<BloodRequest[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [locationQuery, setLocationQuery] = useState("");
+  const [suggestions, setSuggestions] = useState<LocationSuggestion[]>([]);
+  const [selectedLocation, setSelectedLocation] = useState<{
+    address: string;
+    coordinates: [number, number];
+  } | null>(null);
 
-  interface Request {
-    gender: string;
-    name: string;
-    bloodGroup: string;
-    location: string;
-    phone: string;
-    requestDate: string;
-  }
+  // Filters
+  const [filters, setFilters] = useState({
+    bloodGroup: "",
+    radius: "",
+    minBags: "",
+    maxBags: "",
+    minDate: "",
+    maxDate: "",
+  });
 
-  const [requests, setRequests] = useState<Request[]>([]);
-  const allRequests: Request[] = [
-    {
-      gender: "Male",
-      name: "Michael Johnson",
-      bloodGroup: "B+",
-      location: "Dhaka",
-      phone: "123456789",
-      requestDate: "2023-03-10",
-    },
-    {
-      gender: "Female",
-      name: "Emily Davis",
-      bloodGroup: "A-",
-      location: "Chattogram",
-      phone: "987654321",
-      requestDate: "2023-04-05",
-    },
-  ];
+  // Sorting
+  const [sorting, setSorting] = useState({
+    sortBy: "createdAt" as "createdAt" | "neededBy" | "bagsNeeded",
+    sortOrder: "desc" as "asc" | "desc",
+  });
 
-  useEffect(() => {
-    setTimeout(() => {
-      setRequests(allRequests);
-      setLoading(false);
-    }, 1000);
+  const fetchSuggestions = useCallback(async (query: string) => {
+    if (query.length < 3) {
+      setSuggestions([]);
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `https://barikoi.xyz/v1/api/search/autocomplete/${process.env.NEXT_PUBLIC_BARIKOI_API_KEY}/place?q=${query}`
+      );
+      const data = await response.json();
+      setSuggestions(data.places || []);
+    } catch (error) {
+      console.error("Error fetching address suggestions:", error);
+    }
   }, []);
 
-  const handleSearch = () => {
-    setLoading(true);
-    setTimeout(() => {
-      const filteredRequests = allRequests.filter(
-        (request) =>
-          (city ? request.location === city : true) &&
-          (bloodGroup ? request.bloodGroup === bloodGroup : true) &&
-          (gender ? request.gender === gender : true)
-      );
-      setRequests(filteredRequests);
+  const fetchRequests = useCallback(async () => {
+    try {
+      setLoading(true);
+      const params = new URLSearchParams({
+        ...filters,
+        sortBy: sorting.sortBy,
+        sortOrder: sorting.sortOrder,
+        ...(selectedLocation && {
+          lat: selectedLocation.coordinates[1].toString(),
+          lng: selectedLocation.coordinates[0].toString(),
+        }),
+      });
+
+      const response = await fetch(`/api/blood-requests?${params}`);
+      if (!response.ok) throw new Error("Failed to fetch requests");
+
+      const data = await response.json();
+      setRequests(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to load requests");
+    } finally {
       setLoading(false);
-    }, 500);
+    }
+  }, [filters, sorting, selectedLocation]);
+
+  useEffect(() => {
+    fetchRequests();
+  }, [fetchRequests]);
+
+  const handleFilterChange = (field: string, value: string) => {
+    setFilters((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleLocationSelect = (place: LocationSuggestion) => {
+    setSelectedLocation({
+      address: `${place.address}, ${place.city}`,
+      coordinates: [place.longitude, place.latitude],
+    });
+    setLocationQuery("");
+    setSuggestions([]);
+  };
+
+  const resetFilters = () => {
+    setFilters({
+      bloodGroup: "",
+      radius: "",
+      minBags: "",
+      maxBags: "",
+      minDate: "",
+      maxDate: "",
+    });
+    setSelectedLocation(null);
+    fetchRequests();
   };
 
   return (
-    <main className="mt-16 p-4 sm:p-10 bg-[#0D1117] min-h-screen">
-      <div className="container mx-auto">
-        <h1 className="text-3xl font-bold mb-6 text-[#F8F9FA]">Recent Requests</h1>
-        
-        {/* Filters */}
-        <div className="flex flex-wrap justify-center gap-4 py-4">
-          <select
-            className="select select-bordered w-full max-w-xs bg-[#0D1117] text-[#F8F9FA] border-[#C1272D]"
-            value={city}
-            onChange={(e) => setCity(e.target.value)}
+    <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] py-12 px-4 sm:px-6 lg:px-8 pt-24">
+      <div className="max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
+          <motion.h1
+            initial={{ y: -20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            className="text-4xl font-bold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent"
           >
-            <option value="">City</option>
-            <option>Dhaka</option>
-            <option>Chattogram</option>
-            <option>Khulna</option>
-            <option>Rajshahi</option>
-          </select>
+            Recent Blood Requests
+          </motion.h1>
 
-          <select
-            className="select select-bordered w-full max-w-xs bg-[#0D1117] text-[#F8F9FA] border-[#C1272D]"
-            value={bloodGroup}
-            onChange={(e) => setBloodGroup(e.target.value)}
-          >
-            <option value="">Blood Group</option>
-            <option>A+</option>
-            <option>A-</option>
-            <option>O+</option>
-            <option>O-</option>
-            <option>B+</option>
-            <option>B-</option>
-            <option>AB+</option>
-            <option>AB-</option>
-          </select>
+          <div className="flex gap-4">
+            <Button
+              onClick={() => setShowFilters(!showFilters)}
+              variant="outline"
+              className="bg-gray-900/50 border-gray-700 hover:bg-gray-800/50"
+            >
+              <SlidersHorizontal className="w-4 h-4 mr-2" />
+              {showFilters ? "Hide Filters" : "Show Filters"}
+            </Button>
 
-          <select
-            className="select select-bordered w-full max-w-xs bg-[#0D1117] text-[#F8F9FA] border-[#C1272D]"
-            value={gender}
-            onChange={(e) => setGender(e.target.value)}
-          >
-            <option value="">Gender</option>
-            <option>Male</option>
-            <option>Female</option>
-            <option>Other</option>
-          </select>
-
-          <button
-            className="btn bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F]"
-            onClick={handleSearch}
-          >
-            Search
-          </button>
-          <button
-            className="btn bg-gray-600 text-[#F8F9FA] hover:bg-gray-500"
-            onClick={() => {
-              setCity("");
-              setBloodGroup("");
-              setGender("");
-              setRequests(allRequests);
-            }}
-          >
-            Clear Filters
-          </button>
+            <select
+              value={`${sorting.sortBy}-${sorting.sortOrder}`}
+              onChange={(e) => {
+                const [sortBy, sortOrder] = e.target.value.split("-");
+                setSorting({
+                  sortBy: sortBy as any,
+                  sortOrder: sortOrder as any,
+                });
+              }}
+              className="bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-red-500 appearance-none bg-no-repeat bg-right pr-8 cursor-pointer"
+              style={{
+                backgroundImage:
+                  'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM3NTc1NzUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSIvPjwvc3ZnPg==")',
+              }}
+            >
+              <option value="createdAt-desc">Newest First</option>
+              <option value="createdAt-asc">Oldest First</option>
+              <option value="neededBy-asc">Urgency (Soonest)</option>
+              <option value="bagsNeeded-desc">Most Bags Needed</option>
+              <option value="bagsNeeded-asc">Fewest Bags Needed</option>
+            </select>
+          </div>
         </div>
 
-        {/* Request Cards */}
-        <div className="py-6 space-y-6">
-          {loading ? (
-            <p className="text-[#F8F9FA] text-center">Loading requests...</p>
-          ) : requests.length > 0 ? (
-            requests.map((request, index) => (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className="flex flex-col md:flex-row items-center bg-[#0D1117] shadow-lg rounded-xl p-4 sm:p-6 border border-[#C1272D] hover:scale-105"
-              >
-                <figure className="w-20 h-20">
-                  <img
-                    src="/image1.jpg"
-                    alt="Requester"
-                    className="rounded-full border-4 border-[#C1272D]"
-                  />
-                </figure>
-                <div className="ml-0 md:ml-6 mt-4 md:mt-0 flex-1 text-center md:text-left">
-                  <h2 className="text-2xl font-bold text-[#F8F9FA]">{request.name}</h2>
-                  <p><strong className="text-[#C1272D]">Blood Group:</strong> {request.bloodGroup}</p>
-                  <p><strong className="text-[#C1272D]">Location:</strong> {request.location}</p>
-                  <p><strong className="text-[#C1272D]">Request Date:</strong> {request.requestDate}</p>
+        <AnimatePresence>
+          {showFilters && (
+            <motion.div
+              initial={{ opacity: 0, y: -20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              className="bg-gray-900/50 border border-gray-700 rounded-xl p-6 mb-8"
+            >
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Blood Group Filter */}
+                <div>
+                  <label className="text-sm text-gray-300 mb-2 block">
+                    Blood Group
+                  </label>
+                  <select
+                    value={filters.bloodGroup}
+                    onChange={(e) =>
+                      handleFilterChange("bloodGroup", e.target.value)
+                    }
+                    className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-2.5 text-white appearance-none bg-no-repeat bg-right pr-8 cursor-pointer"
+                    style={{
+                      backgroundImage:
+                        'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM3NTc1NzUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSIvPjwvc3ZnPg==")',
+                    }}
+                  >
+                    <option value="">All Groups</option>
+                    {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
+                      (group) => (
+                        <option key={group} value={group}>
+                          {group}
+                        </option>
+                      )
+                    )}
+                  </select>
                 </div>
-                <div className="flex space-x-2 mt-4 md:mt-0">
-                  <a href={`sms:${request.phone}`} className="btn bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F]">Message</a>
-                  <a href={`tel:${request.phone}`} className="btn bg-[#C1272D] text-[#F8F9FA] hover:bg-[#8B1E3F]">Call</a>
+
+                {/* Location Filter */}
+                <div>
+                  <label className="text-sm text-gray-300 mb-2 block">
+                    Location Filter
+                  </label>
+                  <div className="relative">
+                    <Input
+                      placeholder="Search location..."
+                      value={locationQuery}
+                      onChange={(e) => {
+                        setLocationQuery(e.target.value);
+                        fetchSuggestions(e.target.value);
+                      }}
+                      className="bg-gray-800/50 border-gray-700"
+                    />
+                    {suggestions.length > 0 && (
+                      <div className="absolute z-10 w-full mt-2 bg-gray-900 border border-gray-700 rounded-lg shadow-lg">
+                        {suggestions.map((place) => (
+                          <div
+                            key={place.id}
+                            onClick={() => handleLocationSelect(place)}
+                            className="p-3 hover:bg-gray-800/50 cursor-pointer transition-colors border-b border-gray-800 last:border-0"
+                          >
+                            <div className="text-sm">{place.address}</div>
+                            <div className="text-xs text-gray-400">
+                              {place.city}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+
+                  {selectedLocation && (
+                    <div className="mt-4">
+                      <div className="text-sm text-gray-300 flex items-center gap-2 mb-2">
+                        <MapPin className="w-4 h-4" />
+                        {selectedLocation.address}
+                      </div>
+                      <Input
+                        type="number"
+                        placeholder="Radius in meters (e.g., 5000 = 5km)"
+                        value={filters.radius}
+                        onChange={(e) =>
+                          handleFilterChange("radius", e.target.value)
+                        }
+                        className="bg-gray-800/50 border-gray-700"
+                      />
+                    </div>
+                  )}
                 </div>
-              </motion.div>
-            ))
-          ) : (
-            <p className="text-[#F8F9FA] text-center">No requests found!</p>
+
+                {/* Action Buttons */}
+                <div className="md:col-span-2 flex justify-end gap-2">
+                  <Button
+                    onClick={fetchRequests}
+                    className="bg-red-600 hover:bg-red-700"
+                  >
+                    Apply Filters
+                  </Button>
+                  <Button
+                    onClick={resetFilters}
+                    variant="ghost"
+                    className="text-gray-400 hover:text-white"
+                  >
+                    Reset All
+                  </Button>
+                </div>
+              </div>
+            </motion.div>
           )}
-        </div>
+        </AnimatePresence>
+
+        {/* Rest of the code remains same as previous version */}
+        {loading ? (
+          <div className="flex justify-center mt-12">
+            <Loader2 className="w-8 h-8 text-red-500 animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="text-center text-red-500 mt-8">{error}</div>
+        ) : (
+          <motion.div
+            layout
+            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+          >
+            <AnimatePresence>
+              {requests.map((request) => (
+                <motion.div
+                  key={request._id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: -20 }}
+                  layout
+                >
+                  <Card className="bg-gray-900/50 border border-gray-700 rounded-xl p-6 h-full hover:border-red-500 transition-colors">
+                    <div className="flex justify-between items-start mb-4">
+                      <div>
+                        <h3 className="text-xl font-semibold text-white">
+                          {request.patientName}
+                        </h3>
+                        <div className="flex items-center gap-2 mt-2">
+                          <span
+                            className={cn(
+                              "px-2 py-1 rounded-full text-sm",
+                              request.bloodGroup === "O-"
+                                ? "bg-red-500/20 text-red-500"
+                                : "bg-blue-500/20 text-blue-500"
+                            )}
+                          >
+                            {request.bloodGroup}
+                          </span>
+                          <span className="text-gray-400 text-sm">
+                            {request.bagsNeeded} bags needed
+                          </span>
+                        </div>
+                      </div>
+                      {request.patientImage && (
+                        <img
+                          src={request.patientImage}
+                          alt="Patient"
+                          className="w-16 h-16 rounded-lg object-cover border border-gray-700"
+                        />
+                      )}
+                    </div>
+
+                    <div className="space-y-4">
+                      <div className="text-sm">
+                        <p className="text-gray-400">
+                          <MapPin className="w-4 h-4 inline-block mr-2" />
+                          {request.location.address}
+                        </p>
+                        <p className="text-gray-400 mt-2">
+                          <CalendarDays className="w-4 h-4 inline-block mr-2" />
+                          Needed by{" "}
+                          {format(parseISO(request.neededBy), "MMM dd, yyyy")}
+                        </p>
+                      </div>
+
+                      {request.additionalInfo && (
+                        <p className="text-gray-300 text-sm">
+                          {request.additionalInfo}
+                        </p>
+                      )}
+
+                      <div className="flex items-center justify-between mt-4">
+                        <a
+                          href={`tel:${request.contactNumber}`}
+                          className="text-red-500 hover:text-red-400 flex items-center"
+                        >
+                          <Phone className="w-4 h-4 mr-2" />
+                          Contact Donor
+                        </a>
+                        {request.medicalReport && (
+                          <a
+                            href={request.medicalReport}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-gray-400 hover:text-white text-sm"
+                          >
+                            View Medical Report
+                          </a>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+          </motion.div>
+        )}
+
+        {!loading && requests.length === 0 && (
+          <div className="text-center text-gray-400 mt-8">
+            No requests found matching your criteria
+          </div>
+        )}
       </div>
-    </main>
+    </div>
   );
-}
+};
+
+export default RecentRequests;
