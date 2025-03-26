@@ -117,7 +117,6 @@ export default function RequestBlood() {
       if (e.target.files?.[0]) setter(e.target.files[0]);
     };
 
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -163,8 +162,10 @@ export default function RequestBlood() {
       setPatientImage(null);
       setMedicalReport(null);
       setCurrentStep(1);
-    } catch (error: any) {
-      toast.error(error.message || "Submission failed");
+    } catch (error: unknown) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Submission failed";
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }

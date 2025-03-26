@@ -17,6 +17,7 @@ import {
   CalendarDays,
   Phone,
   ChevronDown,
+  RefreshCw,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { BloodRequest } from "@/types/models";
@@ -29,6 +30,10 @@ type LocationSuggestion = {
   latitude: number;
   longitude: number;
 };
+
+// Add types for sorting
+type SortBy = "createdAt" | "neededBy" | "bagsNeeded";
+type SortOrder = "asc" | "desc";
 
 // Use native fetch with a simple AbortController implementation
 const useFetch = <T,>(url: string, options = {}) => {
@@ -267,8 +272,8 @@ const RecentRequests = () => {
 
   // Sorting
   const [sorting, setSorting] = useState({
-    sortBy: "createdAt" as "createdAt" | "neededBy" | "bagsNeeded",
-    sortOrder: "desc" as "asc" | "desc",
+    sortBy: "createdAt" as SortBy,
+    sortOrder: "desc" as SortOrder,
   });
 
   const fetchSuggestions = useCallback(async (query: string) => {
@@ -309,7 +314,7 @@ const RecentRequests = () => {
 
       const response = await fetch(`/api/blood-requests?${params}`, {
         signal,
-        cache: "force-cache", // Use Next.js cache for fetching
+        cache: "no-store", // Change from force-cache to no-store to always fetch fresh data
       });
 
       if (!response.ok) throw new Error("Failed to fetch requests");
@@ -371,6 +376,12 @@ const RecentRequests = () => {
       maxDate: "",
     });
     setSelectedLocation(null);
+    fetchRequests();
+  };
+
+  // Add a new handleRefresh function
+  const handleRefresh = () => {
+    setShowSkeleton(true);
     fetchRequests();
   };
 
@@ -485,14 +496,29 @@ const RecentRequests = () => {
               {showFilters ? "Hide Filters" : "Show Filters"}
             </Button>
 
+            <Button
+              onClick={handleRefresh}
+              variant="outline"
+              className="bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 text-sm sm:text-base"
+              size="sm"
+              disabled={loading}
+            >
+              <RefreshCw
+                className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${
+                  loading ? "animate-spin" : ""
+                }`}
+              />
+              Refresh
+            </Button>
+
             <div className="relative group">
               <select
                 value={`${sorting.sortBy}-${sorting.sortOrder}`}
                 onChange={(e) => {
                   const [sortBy, sortOrder] = e.target.value.split("-");
                   setSorting({
-                    sortBy: sortBy as any,
-                    sortOrder: sortOrder as any,
+                    sortBy: sortBy as SortBy,
+                    sortOrder: sortOrder as SortOrder,
                   });
                 }}
                 className="appearance-none bg-gray-900/70 border border-gray-700 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 pr-8 sm:pr-10 text-sm sm:text-base text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500/70 focus:border-red-500/50 transition-all duration-200 cursor-pointer hover:bg-gray-800/80 hover:border-gray-600"
@@ -649,7 +675,7 @@ const RecentRequests = () => {
                 visibility: !showSkeleton && !loading ? "visible" : "hidden",
               }}
             >
-              {requests.map((request, index) => (
+              {requests.map((request) => (
                 <div key={request._id} className="fade-in">
                   <RequestCard request={request} />
                 </div>

@@ -5,6 +5,12 @@ import BloodRequest from "@/lib/models/BloodRequest";
 import { BloodRequestDocument } from "@/lib/models/BloodRequest";
 import cloudinary from "@/lib/cloudinary/cloudinary";
 
+// Define a type for Cloudinary upload result
+interface CloudinaryUploadResult {
+  secure_url: string;
+  [key: string]: any; // For other properties that might be in the result
+}
+
 export const POST = async (req: NextRequest) => {
   await connectDB();
 
@@ -39,7 +45,7 @@ export const POST = async (req: NextRequest) => {
           })
           .end(buffer);
       });
-      patientImageUrl = (result as any).secure_url;
+      patientImageUrl = (result as CloudinaryUploadResult).secure_url;
     }
 
     // Upload medical report
@@ -54,7 +60,7 @@ export const POST = async (req: NextRequest) => {
           })
           .end(buffer);
       });
-      medicalReportUrl = (result as any).secure_url;
+      medicalReportUrl = (result as CloudinaryUploadResult).secure_url;
     }
 
     // Validate required fields
@@ -99,7 +105,6 @@ export const POST = async (req: NextRequest) => {
     );
   }
 };
-
 
 export const GET = async (req: NextRequest) => {
   try {

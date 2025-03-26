@@ -93,7 +93,7 @@ const ProfileUpdate = () => {
             setAvatarPreview(data.imageURL || user.imageUrl);
           }
         }
-      } catch (error) {
+      } catch (_) {
         toast.error("Failed to load profile data");
       } finally {
         setIsLoading(false);
@@ -112,8 +112,8 @@ const ProfileUpdate = () => {
       );
       const data = await response.json();
       setSuggestions(data.places || []);
-    } catch (error) {
-      console.error("Location search failed:", error);
+    } catch (err) {
+      console.error("Location search failed:", err);
     }
   };
 
@@ -184,7 +184,7 @@ const ProfileUpdate = () => {
       } else {
         throw new Error("Update failed");
       }
-    } catch (error) {
+    } catch (_) {
       toast.error("Failed to update profile");
     } finally {
       setIsSubmitting(false);

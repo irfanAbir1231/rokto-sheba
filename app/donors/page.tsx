@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion } from "framer-motion";
 import Image from "next/image";
 
@@ -25,7 +25,9 @@ export default function Donors() {
     setTimeout(() => {
       const filteredDonors = donors.filter(
         (donor) =>
-          donor.location === city && donor.bloodGroup === bloodGroup && donor.gender === gender
+          donor.location === city &&
+          donor.bloodGroup === bloodGroup &&
+          donor.gender === gender
       );
       setDonors(filteredDonors);
       setLoading(false);
@@ -49,7 +51,9 @@ export default function Donors() {
             value={city}
             onChange={(e) => setCity(e.target.value)}
           >
-            <option disabled value="">City</option>
+            <option disabled value="">
+              City
+            </option>
             <option>Dhaka</option>
             <option>Chattogram</option>
             <option>Khulna</option>
@@ -61,7 +65,9 @@ export default function Donors() {
             value={bloodGroup}
             onChange={(e) => setBloodGroup(e.target.value)}
           >
-            <option disabled value="">Blood Group</option>
+            <option disabled value="">
+              Blood Group
+            </option>
             <option>A+</option>
             <option>A-</option>
             <option>O+</option>
@@ -77,7 +83,9 @@ export default function Donors() {
             value={gender}
             onChange={(e) => setGender(e.target.value)}
           >
-            <option disabled value="">Gender</option>
+            <option disabled value="">
+              Gender
+            </option>
             <option>Male</option>
             <option>Female</option>
             <option>Other</option>
@@ -120,20 +128,48 @@ export default function Donors() {
                   className="rounded-full border-4 border-[#C1272D]"
                 />
                 <div className="ml-6 text-left">
-                  <h2 className="text-2xl font-bold text-[#F8F9FA]">{donor.name}</h2>
-                  <p><strong className="text-[#C1272D]">Blood Group:</strong> {donor.bloodGroup}</p>
-                  <p><strong className="text-[#C1272D]">Location:</strong> {donor.location}</p>
-                  <p><strong className="text-[#C1272D]">Last Donation Date:</strong> {donor.lastDonationDate}</p>
+                  <h2 className="text-2xl font-bold text-[#F8F9FA]">
+                    {donor.name}
+                  </h2>
+                  <p>
+                    <strong className="text-[#C1272D]">Blood Group:</strong>{" "}
+                    {donor.bloodGroup}
+                  </p>
+                  <p>
+                    <strong className="text-[#C1272D]">Location:</strong>{" "}
+                    {donor.location}
+                  </p>
+                  <p>
+                    <strong className="text-[#C1272D]">
+                      Last Donation Date:
+                    </strong>{" "}
+                    {donor.lastDonationDate}
+                  </p>
                 </div>
                 <div className="flex space-x-2 mt-4 md:mt-0">
-                  <a href={`sms:${donor.phone}`} className="btn bg-[#C1272D] text-[#F8F9FA]">Message</a>
-                  <a href={`tel:${donor.phone}`} className="btn bg-[#C1272D] text-[#F8F9FA]">Call</a>
+                  <a
+                    href={`sms:${donor.phone}`}
+                    className="btn bg-[#C1272D] text-[#F8F9FA]"
+                  >
+                    Message
+                  </a>
+                  <a
+                    href={`tel:${donor.phone}`}
+                    className="btn bg-[#C1272D] text-[#F8F9FA]"
+                  >
+                    Call
+                  </a>
                 </div>
               </motion.div>
             ))
           ) : (
             <div className="text-center text-[#F8F9FA]">
-              <Image src="/no-results.png" alt="No donors found" width={200} height={200} />
+              <Image
+                src="/no-results.png"
+                alt="No donors found"
+                width={200}
+                height={200}
+              />
               <p>No donors found. Try adjusting your filters.</p>
             </div>
           )}

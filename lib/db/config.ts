@@ -7,10 +7,15 @@ interface MongooseConn {
   promise: Promise<Mongoose> | null;
 }
 
-let cached: MongooseConn = (global as any).mongoose;
+// Define a global type extension to add mongoose property
+declare global {
+  var mongoose: MongooseConn | undefined;
+}
+
+let cached: MongooseConn = global.mongoose || { conn: null, promise: null };
 
 if (!cached) {
-  cached = (global as any).mongoose = {
+  cached = global.mongoose = {
     conn: null,
     promise: null,
   };
