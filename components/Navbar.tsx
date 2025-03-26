@@ -159,11 +159,7 @@ const Navbar = () => {
                   userProfileProps={{
                     appearance: {
                       elements: {
-                        userProfile: {
-                          
-                        
-                        },
-                        
+                        userProfile: {},
                       },
                     },
                   }}

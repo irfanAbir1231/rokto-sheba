@@ -20,7 +20,17 @@ import {
   CalendarDays,
   User,
   FileText,
+  Calendar,
 } from "lucide-react";
+import { format } from "date-fns";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 type BarikoiLocation = {
   address: string;
@@ -436,19 +446,33 @@ export default function RequestBlood() {
                     Needed By
                   </label>
                   <div className="relative">
-                    <input
-                      type="date"
-                      value={formData.neededBy.toISOString().split("T")[0]}
-                      onChange={(e) => {
-                        const selectedDate = new Date(e.target.value);
-                        if (!isNaN(selectedDate.getTime())) {
-                          setFormData({ ...formData, neededBy: selectedDate });
-                        }
-                      }}
-                      className="w-full bg-gray-900/50 border border-gray-700 rounded-lg p-3 text-white focus:ring-2 focus:ring-red-500 focus:border-transparent"
-                      min={new Date().toISOString().split("T")[0]} // Disable past dates
-                      required
-                    />
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal bg-gray-900/50 border-gray-700 hover:bg-gray-800/50",
+                            "focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                          )}
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {format(formData.neededBy, "MMM dd, yyyy")}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0 bg-gray-800 border-gray-700">
+                        <DatePicker
+                          selected={formData.neededBy}
+                          onChange={(date: Date | null) => {
+                            if (date) {
+                              setFormData({ ...formData, neededBy: date });
+                            }
+                          }}
+                          minDate={new Date()}
+                          inline
+                          wrapperClassName="w-full"
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </motion.div>
 
@@ -583,6 +607,71 @@ export default function RequestBlood() {
           </AnimatePresence>
         </form>
       </Card>
+
+      <style jsx global>{`
+        /* Custom styles for react-datepicker */
+        .react-datepicker {
+          font-family: inherit;
+          border: 1px solid #374151;
+          border-radius: 0.5rem;
+          background-color: #1f2937;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .react-datepicker-wrapper {
+          width: 100%;
+        }
+
+        .react-datepicker__header {
+          background-color: #111827;
+          border-bottom: 1px solid #374151;
+          padding-top: 10px;
+        }
+
+        .react-datepicker__current-month {
+          color: white;
+          font-weight: 600;
+        }
+
+        .react-datepicker__day-name {
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .react-datepicker__day {
+          color: white;
+        }
+
+        .react-datepicker__day:hover {
+          background-color: rgba(239, 68, 68, 0.2);
+          border-radius: 0.3rem;
+        }
+
+        .react-datepicker__day--selected {
+          background-color: #ef4444;
+          border-radius: 0.3rem;
+        }
+
+        .react-datepicker__day--keyboard-selected {
+          background-color: rgba(239, 68, 68, 0.5);
+          border-radius: 0.3rem;
+        }
+
+        .react-datepicker__day--disabled {
+          color: #6b7280;
+        }
+
+        .react-datepicker__navigation {
+          top: 13px;
+        }
+
+        .react-datepicker__navigation-icon::before {
+          border-color: #9ca3af;
+        }
+
+        .react-datepicker__navigation:hover *::before {
+          border-color: #ef4444;
+        }
+      `}</style>
     </motion.div>
   );
 }

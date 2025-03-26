@@ -18,10 +18,18 @@ import {
   Phone,
   ChevronDown,
   RefreshCw,
+  Calendar,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { BloodRequest } from "@/types/models";
 import { cn } from "@/lib/utils";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 
 type LocationSuggestion = {
   id: number;
@@ -270,6 +278,10 @@ const RecentRequests = () => {
     maxDate: "",
   });
 
+  // Date picker states
+  const [startDate, setStartDate] = useState<Date | null>(null);
+  const [endDate, setEndDate] = useState<Date | null>(null);
+
   // Sorting
   const [sorting, setSorting] = useState({
     sortBy: "createdAt" as SortBy,
@@ -352,6 +364,16 @@ const RecentRequests = () => {
       if (cleanupFunction) cleanupFunction();
     };
   }, [fetchRequests]);
+
+  // Update date filters when calendar dates change
+  useEffect(() => {
+    if (startDate) {
+      handleFilterChange("minDate", format(startDate, "yyyy-MM-dd"));
+    }
+    if (endDate) {
+      handleFilterChange("maxDate", format(endDate, "yyyy-MM-dd"));
+    }
+  }, [startDate, endDate]);
 
   const handleFilterChange = (field: string, value: string) => {
     setFilters((prev) => ({ ...prev, [field]: value }));
@@ -476,6 +498,107 @@ const RecentRequests = () => {
         .card-grid > div:nth-child(n + 7) {
           animation-delay: 0.7s;
         }
+
+        /* Custom styles for react-datepicker */
+        .react-datepicker {
+          font-family: inherit;
+          border: 1px solid #374151;
+          border-radius: 0.5rem;
+          background-color: #1f2937;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .react-datepicker-wrapper {
+          width: 100%;
+        }
+
+        .react-datepicker__header {
+          background-color: #111827;
+          border-bottom: 1px solid #374151;
+          padding-top: 10px;
+        }
+
+        .react-datepicker__current-month {
+          color: white;
+          font-weight: 600;
+        }
+
+        .react-datepicker__day-name {
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .react-datepicker__day {
+          color: white;
+        }
+
+        .react-datepicker__day:hover {
+          background-color: rgba(239, 68, 68, 0.2);
+          border-radius: 0.3rem;
+        }
+
+        .react-datepicker__day--selected {
+          background-color: #ef4444;
+          border-radius: 0.3rem;
+        }
+
+        .react-datepicker__day--keyboard-selected {
+          background-color: rgba(239, 68, 68, 0.5);
+          border-radius: 0.3rem;
+        }
+
+        .react-datepicker__day--in-range {
+          background-color: rgba(239, 68, 68, 0.2);
+          color: white;
+        }
+
+        .react-datepicker__day--in-selecting-range {
+          background-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .react-datepicker__day--disabled {
+          color: #6b7280;
+        }
+
+        .react-datepicker__navigation {
+          top: 13px;
+        }
+
+        .react-datepicker__navigation-icon::before {
+          border-color: #9ca3af;
+        }
+
+        .react-datepicker__navigation:hover *::before {
+          border-color: #ef4444;
+        }
+
+        .react-datepicker__year-read-view--down-arrow,
+        .react-datepicker__month-read-view--down-arrow {
+          border-color: #9ca3af;
+        }
+
+        .react-datepicker__time-container {
+          border-left-color: #374151;
+        }
+
+        .react-datepicker__time-container .react-datepicker__time {
+          background-color: #1f2937;
+        }
+
+        .react-datepicker-time__header {
+          color: white;
+        }
+
+        .react-datepicker__time-list-item {
+          color: white;
+        }
+
+        .react-datepicker__time-list-item:hover {
+          background-color: rgba(239, 68, 68, 0.2) !important;
+        }
+
+        .react-datepicker__time-list-item--selected {
+          background-color: #ef4444 !important;
+        }
       `}</style>
 
       <div className="max-w-7xl mx-auto">
@@ -565,6 +688,103 @@ const RecentRequests = () => {
                   </select>
                   <div className="absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-gray-300 transition-transform duration-200 group-hover:translate-y-[-45%]">
                     <ChevronDown className="w-4 h-4" />
+                  </div>
+                </div>
+              </div>
+
+              {/* Bags Filter */}
+              <div>
+                <label className="text-sm text-gray-300 mb-2 block">
+                  Bags Needed
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Input
+                    type="number"
+                    placeholder="Min bags"
+                    value={filters.minBags}
+                    onChange={(e) =>
+                      handleFilterChange("minBags", e.target.value)
+                    }
+                    className="bg-gray-800/50 border-gray-700"
+                    min="1"
+                  />
+                  <Input
+                    type="number"
+                    placeholder="Max bags"
+                    value={filters.maxBags}
+                    onChange={(e) =>
+                      handleFilterChange("maxBags", e.target.value)
+                    }
+                    className="bg-gray-800/50 border-gray-700"
+                    min="1"
+                  />
+                </div>
+              </div>
+
+              {/* Date Range Filter - Professional Calendar UI */}
+              <div>
+                <label className="text-sm text-gray-300 mb-2 block">
+                  Date Range (Needed By)
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="relative">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal bg-gray-800/70 border-gray-700 hover:bg-gray-700/80",
+                            !startDate && "text-gray-400"
+                          )}
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {startDate
+                            ? format(startDate, "MMM dd, yyyy")
+                            : "Start date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0 bg-gray-800 border-gray-700">
+                        <DatePicker
+                          selected={startDate}
+                          onChange={(date: Date | null) => setStartDate(date)}
+                          selectsStart
+                          startDate={startDate}
+                          endDate={endDate}
+                          minDate={new Date()}
+                          inline
+                        />
+                      </PopoverContent>
+                    </Popover>
+                  </div>
+
+                  <div className="relative">
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <Button
+                          variant="outline"
+                          className={cn(
+                            "w-full justify-start text-left font-normal bg-gray-800/70 border-gray-700 hover:bg-gray-700/80",
+                            !endDate && "text-gray-400"
+                          )}
+                        >
+                          <Calendar className="mr-2 h-4 w-4" />
+                          {endDate
+                            ? format(endDate, "MMM dd, yyyy")
+                            : "End date"}
+                        </Button>
+                      </PopoverTrigger>
+                      <PopoverContent className="p-0 bg-gray-800 border-gray-700">
+                        <DatePicker
+                          selected={endDate}
+                          onChange={(date: Date | null) => setEndDate(date)}
+                          selectsEnd
+                          startDate={startDate}
+                          endDate={endDate}
+                          minDate={startDate || new Date()}
+                          inline
+                        />
+                      </PopoverContent>
+                    </Popover>
                   </div>
                 </div>
               </div>

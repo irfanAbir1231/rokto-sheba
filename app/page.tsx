@@ -451,7 +451,18 @@ export default function Home() {
                 whileHover={{ y: -10 }}
                 className="bg-gradient-to-br from-[#161F2C] to-[#0D1117] p-6 rounded-xl text-center shadow-xl"
               >
-                <div className="rounded-full bg-[#C1272D] w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <motion.div
+                  className="rounded-full bg-[#C1272D] w-16 h-16 flex items-center justify-center mx-auto mb-4"
+                  animate={{
+                    y: [0, -10, 0],
+                    rotate: [0, 5, 0, -5, 0],
+                  }}
+                  transition={{
+                    duration: 5,
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                  }}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-8 w-8 text-white"
@@ -466,7 +477,7 @@ export default function Home() {
                       d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
                     />
                   </svg>
-                </div>
+                </motion.div>
                 <h3 className="text-xl font-bold text-white mb-2">
                   Register as a Donor
                 </h3>
@@ -480,7 +491,19 @@ export default function Home() {
                 whileHover={{ y: -10 }}
                 className="bg-gradient-to-br from-[#161F2C] to-[#0D1117] p-6 rounded-xl text-center shadow-xl"
               >
-                <div className="rounded-full bg-[#C1272D] w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <motion.div
+                  className="rounded-full bg-[#C1272D] w-16 h-16 flex items-center justify-center mx-auto mb-4"
+                  animate={{
+                    y: [0, -10, 0],
+                    rotate: [0, 5, 0, -5, 0],
+                  }}
+                  transition={{
+                    duration: 5,
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                    delay: 0.5,
+                  }}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-8 w-8 text-white"
@@ -495,7 +518,7 @@ export default function Home() {
                       d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                     />
                   </svg>
-                </div>
+                </motion.div>
                 <h3 className="text-xl font-bold text-white mb-2">
                   Find Donors
                 </h3>
@@ -509,7 +532,19 @@ export default function Home() {
                 whileHover={{ y: -10 }}
                 className="bg-gradient-to-br from-[#161F2C] to-[#0D1117] p-6 rounded-xl text-center shadow-xl"
               >
-                <div className="rounded-full bg-[#C1272D] w-16 h-16 flex items-center justify-center mx-auto mb-4">
+                <motion.div
+                  className="rounded-full bg-[#C1272D] w-16 h-16 flex items-center justify-center mx-auto mb-4"
+                  animate={{
+                    y: [0, -10, 0],
+                    rotate: [0, 5, 0, -5, 0],
+                  }}
+                  transition={{
+                    duration: 5,
+                    ease: "easeInOut",
+                    repeat: Infinity,
+                    delay: 1,
+                  }}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-8 w-8 text-white"
@@ -524,7 +559,7 @@ export default function Home() {
                       d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
                     />
                   </svg>
-                </div>
+                </motion.div>
                 <h3 className="text-xl font-bold text-white mb-2">
                   Schedule Donation
                 </h3>
