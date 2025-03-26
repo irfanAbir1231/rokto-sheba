@@ -126,22 +126,23 @@ const RecentRequests = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] py-12 px-4 sm:px-6 lg:px-8 pt-24">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <motion.h1
             initial={{ y: -20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            className="text-4xl font-bold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent"
+            className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-red-500 to-pink-500 bg-clip-text text-transparent"
           >
             Recent Blood Requests
           </motion.h1>
 
-          <div className="flex gap-4">
+          <div className="flex flex-wrap gap-3">
             <Button
               onClick={() => setShowFilters(!showFilters)}
               variant="outline"
-              className="bg-gray-900/50 border-gray-700 hover:bg-gray-800/50"
+              className="bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 text-sm sm:text-base"
+              size="sm"
             >
-              <SlidersHorizontal className="w-4 h-4 mr-2" />
+              <SlidersHorizontal className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
               {showFilters ? "Hide Filters" : "Show Filters"}
             </Button>
 
@@ -154,10 +155,12 @@ const RecentRequests = () => {
                   sortOrder: sortOrder as any,
                 });
               }}
-              className="bg-gray-900/50 border border-gray-700 rounded-lg px-4 py-2 text-white focus:ring-2 focus:ring-red-500 appearance-none bg-no-repeat bg-right pr-8 cursor-pointer"
+              className="bg-gray-900/50 border border-gray-700 rounded-lg px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base text-white focus:ring-2 focus:ring-red-500 appearance-none bg-no-repeat bg-right pr-6 sm:pr-8 cursor-pointer"
               style={{
                 backgroundImage:
                   'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM3NTc1NzUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSIvPjwvc3ZnPg==")',
+                backgroundSize: "16px",
+                backgroundPosition: "right 8px center",
               }}
             >
               <option value="createdAt-desc">Newest First</option>
@@ -175,9 +178,9 @@ const RecentRequests = () => {
               initial={{ opacity: 0, y: -20 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -20 }}
-              className="bg-gray-900/50 border border-gray-700 rounded-xl p-6 mb-8"
+              className="bg-gray-900/50 border border-gray-700 rounded-xl p-4 sm:p-6 mb-8"
             >
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
                 {/* Blood Group Filter */}
                 <div>
                   <label className="text-sm text-gray-300 mb-2 block">
@@ -192,6 +195,8 @@ const RecentRequests = () => {
                     style={{
                       backgroundImage:
                         'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM3NTc1NzUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSIvPjwvc3ZnPg==")',
+                      backgroundSize: "16px",
+                      backgroundPosition: "right 8px center",
                     }}
                   >
                     <option value="">All Groups</option>
@@ -258,17 +263,17 @@ const RecentRequests = () => {
                 </div>
 
                 {/* Action Buttons */}
-                <div className="md:col-span-2 flex justify-end gap-2">
+                <div className="md:col-span-2 flex flex-wrap justify-center sm:justify-end gap-2">
                   <Button
                     onClick={fetchRequests}
-                    className="bg-red-600 hover:bg-red-700"
+                    className="bg-red-600 hover:bg-red-700 w-full sm:w-auto"
                   >
                     Apply Filters
                   </Button>
                   <Button
                     onClick={resetFilters}
                     variant="ghost"
-                    className="text-gray-400 hover:text-white"
+                    className="text-gray-400 hover:text-white w-full sm:w-auto"
                   >
                     Reset All
                   </Button>
@@ -288,7 +293,7 @@ const RecentRequests = () => {
         ) : (
           <motion.div
             layout
-            className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6"
           >
             <AnimatePresence>
               {requests.map((request) => (
@@ -299,16 +304,16 @@ const RecentRequests = () => {
                   exit={{ opacity: 0, y: -20 }}
                   layout
                 >
-                  <Card className="bg-gray-900/50 border border-gray-700 rounded-xl p-6 h-full hover:border-red-500 transition-colors">
+                  <Card className="bg-gray-900/50 border border-gray-700 rounded-xl p-4 sm:p-6 h-full hover:border-red-500 transition-colors">
                     <div className="flex justify-between items-start mb-4">
-                      <div>
-                        <h3 className="text-xl font-semibold text-white">
+                      <div className="max-w-[75%]">
+                        <h3 className="text-lg sm:text-xl font-semibold text-white truncate">
                           {request.patientName}
                         </h3>
-                        <div className="flex items-center gap-2 mt-2">
+                        <div className="flex flex-wrap items-center gap-2 mt-2">
                           <span
                             className={cn(
-                              "px-2 py-1 rounded-full text-sm",
+                              "px-2 py-1 rounded-full text-xs sm:text-sm",
                               request.bloodGroup === "O-"
                                 ? "bg-red-500/20 text-red-500"
                                 : "bg-blue-500/20 text-blue-500"
@@ -316,7 +321,7 @@ const RecentRequests = () => {
                           >
                             {request.bloodGroup}
                           </span>
-                          <span className="text-gray-400 text-sm">
+                          <span className="text-gray-400 text-xs sm:text-sm">
                             {request.bagsNeeded} bags needed
                           </span>
                         </div>
@@ -325,36 +330,38 @@ const RecentRequests = () => {
                         <img
                           src={request.patientImage}
                           alt="Patient"
-                          className="w-16 h-16 rounded-lg object-cover border border-gray-700"
+                          className="w-12 h-12 sm:w-16 sm:h-16 rounded-lg object-cover border border-gray-700"
                         />
                       )}
                     </div>
 
-                    <div className="space-y-4">
-                      <div className="text-sm">
-                        <p className="text-gray-400">
-                          <MapPin className="w-4 h-4 inline-block mr-2" />
-                          {request.location.address}
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="text-xs sm:text-sm">
+                        <p className="text-gray-400 break-words">
+                          <MapPin className="w-3 h-3 sm:w-4 sm:h-4 inline-block mr-1 sm:mr-2 flex-shrink-0" />
+                          <span className="line-clamp-1">
+                            {request.location.address}
+                          </span>
                         </p>
                         <p className="text-gray-400 mt-2">
-                          <CalendarDays className="w-4 h-4 inline-block mr-2" />
+                          <CalendarDays className="w-3 h-3 sm:w-4 sm:h-4 inline-block mr-1 sm:mr-2 flex-shrink-0" />
                           Needed by{" "}
                           {format(parseISO(request.neededBy), "MMM dd, yyyy")}
                         </p>
                       </div>
 
                       {request.additionalInfo && (
-                        <p className="text-gray-300 text-sm">
+                        <p className="text-gray-300 text-xs sm:text-sm line-clamp-2">
                           {request.additionalInfo}
                         </p>
                       )}
 
-                      <div className="flex items-center justify-between mt-4">
+                      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 mt-3 sm:mt-4">
                         <a
                           href={`tel:${request.contactNumber}`}
-                          className="text-red-500 hover:text-red-400 flex items-center"
+                          className="text-red-500 hover:text-red-400 flex items-center text-xs sm:text-sm"
                         >
-                          <Phone className="w-4 h-4 mr-2" />
+                          <Phone className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 flex-shrink-0" />
                           Contact Donor
                         </a>
                         {request.medicalReport && (
@@ -362,7 +369,7 @@ const RecentRequests = () => {
                             href={request.medicalReport}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="text-gray-400 hover:text-white text-sm"
+                            className="text-gray-400 hover:text-white text-xs sm:text-sm"
                           >
                             View Medical Report
                           </a>
