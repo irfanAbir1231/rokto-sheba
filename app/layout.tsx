@@ -43,7 +43,7 @@ export default function RootLayout({
               border: "1px solid #991B1B", // Slightly darker red border
             }}
           />
-          <main className="min-h-screen">{children}</main>
+          <main>{children}</main>
           <Footer />
         </body>
       </html>
