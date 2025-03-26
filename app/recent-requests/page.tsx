@@ -10,6 +10,7 @@ import {
   MapPin,
   CalendarDays,
   Phone,
+  ChevronDown,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { BloodRequest } from "@/types/models";
@@ -125,6 +126,22 @@ const RecentRequests = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] py-12 px-4 sm:px-6 lg:px-8 pt-24">
+      <style jsx global>{`
+        select option {
+          background-color: #1f2937;
+          color: white;
+          padding: 8px 12px;
+        }
+
+        select option:hover {
+          background-color: #374151;
+        }
+
+        select option:checked {
+          background-color: rgba(239, 68, 68, 0.2);
+          color: #ef4444;
+        }
+      `}</style>
       <div className="max-w-7xl mx-auto">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <motion.h1
@@ -146,29 +163,28 @@ const RecentRequests = () => {
               {showFilters ? "Hide Filters" : "Show Filters"}
             </Button>
 
-            <select
-              value={`${sorting.sortBy}-${sorting.sortOrder}`}
-              onChange={(e) => {
-                const [sortBy, sortOrder] = e.target.value.split("-");
-                setSorting({
-                  sortBy: sortBy as any,
-                  sortOrder: sortOrder as any,
-                });
-              }}
-              className="bg-gray-900/50 border border-gray-700 rounded-lg px-2 sm:px-4 py-1 sm:py-2 text-sm sm:text-base text-white focus:ring-2 focus:ring-red-500 appearance-none bg-no-repeat bg-right pr-6 sm:pr-8 cursor-pointer"
-              style={{
-                backgroundImage:
-                  'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM3NTc1NzUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSIvPjwvc3ZnPg==")',
-                backgroundSize: "16px",
-                backgroundPosition: "right 8px center",
-              }}
-            >
-              <option value="createdAt-desc">Newest First</option>
-              <option value="createdAt-asc">Oldest First</option>
-              <option value="neededBy-asc">Urgency (Soonest)</option>
-              <option value="bagsNeeded-desc">Most Bags Needed</option>
-              <option value="bagsNeeded-asc">Fewest Bags Needed</option>
-            </select>
+            <div className="relative group">
+              <select
+                value={`${sorting.sortBy}-${sorting.sortOrder}`}
+                onChange={(e) => {
+                  const [sortBy, sortOrder] = e.target.value.split("-");
+                  setSorting({
+                    sortBy: sortBy as any,
+                    sortOrder: sortOrder as any,
+                  });
+                }}
+                className="appearance-none bg-gray-900/70 border border-gray-700 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 pr-8 sm:pr-10 text-sm sm:text-base text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500/70 focus:border-red-500/50 transition-all duration-200 cursor-pointer hover:bg-gray-800/80 hover:border-gray-600"
+              >
+                <option value="createdAt-desc">Newest First</option>
+                <option value="createdAt-asc">Oldest First</option>
+                <option value="neededBy-asc">Urgency (Soonest)</option>
+                <option value="bagsNeeded-desc">Most Bags Needed</option>
+                <option value="bagsNeeded-asc">Fewest Bags Needed</option>
+              </select>
+              <div className="absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-gray-300 transition-transform duration-200 group-hover:translate-y-[-45%]">
+                <ChevronDown className="w-4 h-4" />
+              </div>
+            </div>
           </div>
         </div>
 
@@ -186,28 +202,27 @@ const RecentRequests = () => {
                   <label className="text-sm text-gray-300 mb-2 block">
                     Blood Group
                   </label>
-                  <select
-                    value={filters.bloodGroup}
-                    onChange={(e) =>
-                      handleFilterChange("bloodGroup", e.target.value)
-                    }
-                    className="w-full bg-gray-800/50 border border-gray-700 rounded-lg p-2.5 text-white appearance-none bg-no-repeat bg-right pr-8 cursor-pointer"
-                    style={{
-                      backgroundImage:
-                        'url("data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9IiM3NTc1NzUiIHN0cm9rZS13aWR0aD0iMiIgc3Ryb2tlLWxpbmVjYXA9InJvdW5kIiBzdHJva2UtbGluZWpvaW49InJvdW5kIj48cG9seWxpbmUgcG9pbnRzPSI2IDkgMTIgMTUgMTggOSIvPjwvc3ZnPg==")',
-                      backgroundSize: "16px",
-                      backgroundPosition: "right 8px center",
-                    }}
-                  >
-                    <option value="">All Groups</option>
-                    {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
-                      (group) => (
-                        <option key={group} value={group}>
-                          {group}
-                        </option>
-                      )
-                    )}
-                  </select>
+                  <div className="relative group">
+                    <select
+                      value={filters.bloodGroup}
+                      onChange={(e) =>
+                        handleFilterChange("bloodGroup", e.target.value)
+                      }
+                      className="w-full appearance-none bg-gray-800/70 border border-gray-700 rounded-lg p-2.5 text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500/70 focus:border-red-500/50 transition-all duration-200 cursor-pointer hover:bg-gray-700/80 hover:border-gray-600"
+                    >
+                      <option value="">All Blood Groups</option>
+                      {["A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-"].map(
+                        (group) => (
+                          <option key={group} value={group}>
+                            {group}
+                          </option>
+                        )
+                      )}
+                    </select>
+                    <div className="absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-gray-300 transition-transform duration-200 group-hover:translate-y-[-45%]">
+                      <ChevronDown className="w-4 h-4" />
+                    </div>
+                  </div>
                 </div>
 
                 {/* Location Filter */}
