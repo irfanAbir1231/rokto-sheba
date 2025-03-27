@@ -5,6 +5,9 @@ import { useUser } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
+import { format } from "date-fns";
 import {
   Loader2,
   UploadCloud,
@@ -16,6 +19,7 @@ import {
   CalendarDays,
   FileText,
   ClipboardList,
+  Calendar,
 } from "lucide-react";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -37,7 +41,7 @@ const ProfileUpdate = () => {
   const [phone, setPhone] = useState("");
   const [nidNumber, setNidNumber] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
-  const [dob, setDob] = useState("");
+  const [dob, setDob] = useState<Date | null>(null);
 
   // Address Information
   const [address, setAddress] = useState({
@@ -72,7 +76,7 @@ const ProfileUpdate = () => {
 
   const isValidPhoneNumber = (phone: string) => /^01\d{9}$/.test(phone);
   const isFormValid =
-    firstName && lastName && phone && bloodGroup && dob && address.name;
+    firstName && lastName && phone && bloodGroup && address.name;
 
   useEffect(() => {
     if (!isLoaded || !user) return;
@@ -88,7 +92,7 @@ const ProfileUpdate = () => {
             setPhone(data.phone);
             setNidNumber(data.nidNumber);
             setBloodGroup(data.bloodGroup);
-            setDob(new Date(data.dob).toISOString().split("T")[0]);
+            setDob(data.dob ? new Date(data.dob) : null);
             setAddress(data.address);
             setAvatarPreview(data.imageURL || user.imageUrl);
           }
@@ -157,6 +161,11 @@ const ProfileUpdate = () => {
       return;
     }
 
+    if (!dob) {
+      toast.error("Date of birth is required");
+      return;
+    }
+
     setIsSubmitting(true);
     const formData = new FormData();
     formData.append("firstName", firstName);
@@ -164,7 +173,7 @@ const ProfileUpdate = () => {
     formData.append("phone", phone);
     formData.append("nidNumber", nidNumber);
     formData.append("bloodGroup", bloodGroup);
-    formData.append("dob", dob);
+    formData.append("dob", dob.toISOString());
     formData.append("address", JSON.stringify(address));
     if (avatar) formData.append("imageURL", avatar);
     if (hbsAgReport) formData.append("hbsAgReport", hbsAgReport);
@@ -357,13 +366,23 @@ const ProfileUpdate = () => {
                   <CalendarDays className="w-4 h-4" />
                   Date of Birth
                 </label>
-                <input
-                  type="date"
-                  value={dob}
-                  onChange={(e) => setDob(e.target.value)}
-                  className="w-full p-3 rounded-xl bg-gray-900/50 border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all pr-12"
-                  required
-                />
+                <div className="relative">
+                  <DatePicker
+                    selected={dob}
+                    onChange={(date) => setDob(date)}
+                    peekNextMonth
+                    showMonthDropdown
+                    showYearDropdown
+                    dropdownMode="select"
+                    placeholderText="Select date of birth"
+                    dateFormat="MMM dd, yyyy"
+                    className="w-full p-3 rounded-xl bg-gray-900/50 border border-gray-700 focus:border-red-500 focus:ring-2 focus:ring-red-500/50 transition-all"
+                    wrapperClassName="w-full"
+                    maxDate={new Date()}
+                    required
+                  />
+                  <Calendar className="absolute right-3 top-3.5 text-gray-400 pointer-events-none w-5 h-5" />
+                </div>
               </motion.div>
             </div>
           </motion.div>
@@ -503,6 +522,97 @@ const ProfileUpdate = () => {
           </motion.div>
         </motion.form>
       </div>
+
+      <style jsx global>{`
+        /* Custom styles for react-datepicker */
+        .react-datepicker {
+          font-family: inherit;
+          border: 1px solid #374151;
+          border-radius: 0.5rem;
+          background-color: #1f2937;
+          box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+        }
+
+        .react-datepicker-wrapper {
+          width: 100%;
+        }
+
+        .react-datepicker__header {
+          background-color: #111827;
+          border-bottom: 1px solid #374151;
+          padding-top: 10px;
+        }
+
+        .react-datepicker__current-month {
+          color: white;
+          font-weight: 600;
+        }
+
+        .react-datepicker__day-name {
+          color: rgba(255, 255, 255, 0.6);
+        }
+
+        .react-datepicker__day {
+          color: white;
+        }
+
+        .react-datepicker__day:hover {
+          background-color: rgba(239, 68, 68, 0.2);
+          border-radius: 0.3rem;
+        }
+
+        .react-datepicker__day--selected {
+          background-color: #ef4444;
+          border-radius: 0.3rem;
+        }
+
+        .react-datepicker__day--keyboard-selected {
+          background-color: rgba(239, 68, 68, 0.5);
+          border-radius: 0.3rem;
+        }
+
+        .react-datepicker__day--disabled {
+          color: #6b7280;
+        }
+
+        .react-datepicker__navigation {
+          top: 13px;
+        }
+
+        .react-datepicker__navigation-icon::before {
+          border-color: #9ca3af;
+        }
+
+        .react-datepicker__navigation:hover *::before {
+          border-color: #ef4444;
+        }
+
+        /* Dropdown styles for month and year */
+        .react-datepicker__month-select,
+        .react-datepicker__year-select {
+          background-color: #1f2937;
+          color: white;
+          border: 1px solid #374151;
+          border-radius: 0.25rem;
+          padding: 0.375rem 0.75rem;
+          font-size: 0.875rem;
+          line-height: 1.25rem;
+          appearance: menulist; /* Show the default dropdown arrow */
+        }
+
+        .react-datepicker__month-select option,
+        .react-datepicker__year-select option {
+          background-color: #1f2937;
+          color: white;
+        }
+
+        .react-datepicker__month-dropdown,
+        .react-datepicker__year-dropdown {
+          background-color: #1f2937;
+          border: 1px solid #374151;
+          border-radius: 0.25rem;
+        }
+      `}</style>
     </motion.div>
   );
 };
