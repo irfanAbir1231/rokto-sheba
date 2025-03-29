@@ -1,5 +1,4 @@
 "use client";
-
 import { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { motion } from "framer-motion";
@@ -7,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { format } from "date-fns";
 import {
   Loader2,
   UploadCloud,
@@ -232,11 +230,17 @@ const ProfileUpdate = () => {
                 className="hidden"
               />
               <div className="relative w-32 h-32 rounded-full border-4 border-gray-700 group-hover:border-red-500 transition-all">
-                <img
-                  src={avatarPreview}
-                  alt="Profile"
-                  className="w-full h-full rounded-full object-cover"
-                />
+                {avatarPreview ? (
+                  <img
+                    src={avatarPreview}
+                    alt="Profile"
+                    className="w-full h-full rounded-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full rounded-full bg-gray-800 flex items-center justify-center text-gray-400 text-sm">
+                    No Image
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                   <UploadCloud className="w-6 h-6 text-white" />
                 </div>
@@ -454,7 +458,11 @@ const ProfileUpdate = () => {
                   state: antiHcvReport,
                   setter: setAntiHcvReport,
                 },
-                { label: "CBC Report", state: cbcReport, setter: setCbcReport },
+                {
+                  label: "CBC Report",
+                  state: cbcReport,
+                  setter: setCbcReport,
+                },
               ].map(({ label, state, setter }) => (
                 <motion.div
                   key={label}

@@ -4,6 +4,8 @@ import { connectDB } from "@/lib/db/config";
 import BloodRequest from "@/lib/models/BloodRequest";
 import { BloodRequestDocument } from "@/lib/models/BloodRequest";
 import cloudinary from "@/lib/cloudinary/cloudinary";
+import { auth } from "@clerk/nextjs/server";
+import User from "@/lib/models/User";
 
 // Define a type for Cloudinary upload result
 interface CloudinaryUploadResult {
@@ -14,7 +16,32 @@ interface CloudinaryUploadResult {
 export const POST = async (req: NextRequest) => {
   await connectDB();
 
+  const { userId } = await auth();
+
+  if (!userId) {
+    return NextResponse.json(
+      { message: "Authentication required" },
+      { status: 401 }
+    );
+  }
+
   try {
+    const user = await User.findOne({ clerkID: userId });
+    if (!user) {
+      return NextResponse.json(
+        { message: "Please complete your profile first" },
+        { status: 403 }
+      );
+    }
+
+    // Check if user has completed profile updates
+    if (!user.isUpdated) {
+      return NextResponse.json(
+        { message: "Please update your profile information" },
+        { status: 403 }
+      );
+    }
+
     const formData = await req.formData();
 
     // Extract text fields
@@ -92,6 +119,7 @@ export const POST = async (req: NextRequest) => {
       additionalInfo,
       patientImage: patientImageUrl,
       medicalReport: medicalReportUrl,
+      requestedBy: user._id,
     });
 
     await bloodRequest.save();
@@ -112,8 +140,24 @@ export const GET = async (req: NextRequest) => {
 
     const { searchParams } = new URL(req.url);
 
-    // Base query
-    let query = BloodRequest.find();
+    // Base query with population
+    let query = BloodRequest.find().populate({
+      path: "requestedBy",
+      select: "firstName lastName imageURL createdAt",
+    });
+
+    const userId = searchParams.get("userId");
+    if (userId) {
+      // Find the user document using Clerk ID
+      const user = await User.findOne({ clerkID: userId });
+      if (!user) {
+        return NextResponse.json(
+          { message: "User not found" },
+          { status: 404 }
+        );
+      }
+      query = query.where("requestedBy").equals(user._id);
+    }
 
     // 1. Blood Group Filter
     const bloodGroup = searchParams.get("bloodGroup");
@@ -170,7 +214,17 @@ export const GET = async (req: NextRequest) => {
     // Execute query
     const requests = await query.select("-__v -updatedAt").lean().exec();
 
-    return NextResponse.json(requests, { status: 200 });
+    const transformedRequests = requests.map((request) => ({
+      ...request,
+      createdAt: request.createdAt.toISOString(),
+      requestedBy: {
+        firstName: request.requestedBy.firstName,
+        lastName: request.requestedBy.lastName,
+        imageURL: request.requestedBy.imageURL,
+      },
+    }));
+
+    return NextResponse.json(transformedRequests, { status: 200 });
   } catch (error) {
     console.error("Error fetching blood requests:", error);
     return NextResponse.json(

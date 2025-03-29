@@ -1,5 +1,5 @@
 "use client";
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { isValidPhoneNumber } from "@/lib/utils/validator";
@@ -31,6 +31,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/nextjs";
 
 type BarikoiLocation = {
   address: string;
@@ -51,8 +53,12 @@ const formVariants = {
 };
 
 export default function RequestBlood() {
+  const router = useRouter();
+  const { user: clerkUser, isLoaded: clerkLoaded } = useUser();
   const { scrollYProgress } = useScroll();
   const yOffset = useTransform(scrollYProgress, [0, 1], [50, -50]);
+  const [profileVerified, setProfileVerified] = useState(false);
+  const [loadingProfile, setLoadingProfile] = useState(true);
 
   // State variables
   const [formData, setFormData] = useState({
@@ -99,6 +105,72 @@ export default function RequestBlood() {
       setIsSearching(false);
     }
   }, []);
+
+  useEffect(() => {
+    const verifyProfile = async () => {
+      if (!clerkLoaded) return;
+
+      if (!clerkUser) {
+        router.push("/sign-in");
+        return;
+      }
+
+      try {
+        const response = await fetch("/api/check-profile", {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+
+        if (!response.ok) {
+          // router.push("/profile-update");
+          router.push("/profile-update?message=profile-incomplete");
+          return;
+        }
+
+        const data = await response.json();
+        if (!data.isUpdated) {
+          // router.push("/profile-update");
+          router.push("/profile-update?message=profile-incomplete");
+          return;
+        }
+
+        setProfileVerified(true);
+      } catch (error) {
+        toast.error("Failed to verify profile");
+        router.push("/profile-update");
+      } finally {
+        setLoadingProfile(false);
+      }
+    };
+
+    verifyProfile();
+  }, [clerkUser, clerkLoaded, router]);
+
+  if (!clerkLoaded || loadingProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-red-500 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!profileVerified) {
+    return null; // Redirecting, so no need to render anything
+  }
+
+  if (!clerkLoaded || loadingProfile) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] flex items-center justify-center">
+        <Loader2 className="w-12 h-12 text-red-500 animate-spin" />
+      </div>
+    );
+  }
+
+  if (!profileVerified) {
+    return null; // Redirecting, so no need to render anything
+  }
 
   // Form handlers
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -186,6 +258,7 @@ export default function RequestBlood() {
       style={{ y: yOffset }}
       className="min-h-screen bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 pt-24"
     >
+      <ToastContainer position="top-right" autoClose={5000} theme="dark" />
       <Card className="max-w-4xl w-full bg-[#161B22]/90 backdrop-blur-lg p-8 rounded-xl shadow-2xl border border-gray-800/50">
         <ToastContainer position="top-right" autoClose={3000} theme="dark" />
 

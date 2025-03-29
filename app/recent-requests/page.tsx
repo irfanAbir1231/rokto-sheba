@@ -1,17 +1,9 @@
 "use client";
-import {
-  useEffect,
-  useState,
-  useCallback,
-  Suspense,
-  useRef,
-  MouseEvent,
-} from "react";
+import { useEffect, useState, useCallback, useRef, MouseEvent } from "react";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
-  Loader2,
   SlidersHorizontal,
   MapPin,
   CalendarDays,
@@ -19,6 +11,7 @@ import {
   ChevronDown,
   RefreshCw,
   Calendar,
+  User,
 } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { BloodRequest } from "@/types/models";
@@ -30,6 +23,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { useUser } from "@clerk/nextjs";
 
 type LocationSuggestion = {
   id: number;
@@ -119,6 +113,31 @@ const RequestCard = ({ request }: { request: BloodRequest }) => {
   const [imageLoaded, setImageLoaded] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
+  const renderPosterInfo = () => (
+    <div
+      className="flex items-center gap-3 mb-4"
+      style={{ transform: "translateZ(15px)" }}
+    >
+      <div className="relative">
+        <img
+          src={request.requestedBy.imageURL || "/default-avatar.png"}
+          alt="Profile"
+          className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-red-500/50 object-cover"
+          loading="lazy"
+        />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-white">
+          {request.requestedBy.firstName} {request.requestedBy.lastName}
+        </p>
+        <p className="text-xs text-gray-400">
+          Posted{" "}
+          {format(parseISO(request.createdAt), "MMM dd, yyyy 'at' h:mm a")}
+        </p>
+      </div>
+    </div>
+  );
+
   // Handle parallax effect
   const handleMouseMove = (e: MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current) return;
@@ -163,6 +182,7 @@ const RequestCard = ({ request }: { request: BloodRequest }) => {
         transition: "all 0.3s ease-out",
       }}
     >
+      {renderPosterInfo()}
       <div className="flex justify-between items-start mb-4">
         <div className="max-w-[75%]" style={{ transform: "translateZ(15px)" }}>
           <h3 className="text-lg sm:text-xl font-semibold text-white truncate">
@@ -256,6 +276,7 @@ const RequestCard = ({ request }: { request: BloodRequest }) => {
 };
 
 const RecentRequests = () => {
+  const { user } = useUser();
   const [requests, setRequests] = useState<BloodRequest[]>([]);
   const [loading, setLoading] = useState(true);
   const [showSkeleton, setShowSkeleton] = useState(true);
@@ -276,6 +297,7 @@ const RecentRequests = () => {
     maxBags: "",
     minDate: "",
     maxDate: "",
+    userId: "",
   });
 
   // Date picker states
@@ -323,6 +345,10 @@ const RecentRequests = () => {
           lng: selectedLocation.coordinates[0].toString(),
         }),
       });
+
+      if (filters.userId) {
+        params.append("userId", filters.userId);
+      }
 
       const response = await fetch(`/api/blood-requests?${params}`, {
         signal,
@@ -396,6 +422,7 @@ const RecentRequests = () => {
       maxBags: "",
       minDate: "",
       maxDate: "",
+      userId: "",
     });
     setSelectedLocation(null);
     fetchRequests();
@@ -608,6 +635,24 @@ const RecentRequests = () => {
           </h1>
 
           <div className="flex flex-wrap gap-3">
+            {user && (
+              <Button
+                onClick={() => {
+                  setFilters((prev) => ({
+                    ...prev,
+                    userId: prev.userId ? "" : user.id,
+                  }));
+                }}
+                variant={filters.userId ? "default" : "outline"}
+                className="bg-gray-900/50 border-gray-700 hover:bg-gray-800/50 text-sm sm:text-base gap-2"
+                size="sm"
+                disabled={loading}
+              >
+                <User className="w-4 h-4" />
+                {filters.userId ? "Show All Posts" : "Show My Posts"}
+              </Button>
+            )}
+
             <Button
               onClick={() => setShowFilters(!showFilters)}
               variant="outline"
@@ -615,7 +660,7 @@ const RecentRequests = () => {
               size="sm"
               disabled={loading}
             >
-              <SlidersHorizontal className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <SlidersHorizontal className="w-4 h-4 mr-2" />
               {showFilters ? "Hide Filters" : "Show Filters"}
             </Button>
 
@@ -627,9 +672,7 @@ const RecentRequests = () => {
               disabled={loading}
             >
               <RefreshCw
-                className={`w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2 ${
-                  loading ? "animate-spin" : ""
-                }`}
+                className={`w-4 h-4 mr-2 ${loading ? "animate-spin" : ""}`}
               />
               Refresh
             </Button>
@@ -644,7 +687,7 @@ const RecentRequests = () => {
                     sortOrder: sortOrder as SortOrder,
                   });
                 }}
-                className="appearance-none bg-gray-900/70 border border-gray-700 rounded-lg px-3 sm:px-4 py-1.5 sm:py-2 pr-8 sm:pr-10 text-sm sm:text-base text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500/70 focus:border-red-500/50 transition-all duration-200 cursor-pointer hover:bg-gray-800/80 hover:border-gray-600"
+                className="appearance-none bg-gray-900/70 border border-gray-700 rounded-lg px-4 py-2 pr-10 text-sm text-white shadow-sm focus:outline-none focus:ring-2 focus:ring-red-500/70 focus:border-red-500/50 transition-all cursor-pointer hover:bg-gray-800/80 hover:border-gray-600"
                 disabled={loading}
               >
                 <option value="createdAt-desc">Newest First</option>
@@ -653,9 +696,7 @@ const RecentRequests = () => {
                 <option value="bagsNeeded-desc">Most Bags Needed</option>
                 <option value="bagsNeeded-asc">Fewest Bags Needed</option>
               </select>
-              <div className="absolute right-2.5 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-400 group-hover:text-gray-300 transition-transform duration-200 group-hover:translate-y-[-45%]">
-                <ChevronDown className="w-4 h-4" />
-              </div>
+              <ChevronDown className="absolute right-3 top-3 w-4 h-4 text-gray-400" />
             </div>
           </div>
         </div>

@@ -13,6 +13,10 @@ export interface BloodRequestDocument extends Document {
   patientImage?: string;
   medicalReport?: string;
   additionalInfo?: string;
+  requestedBy: {
+    type: Schema.Types.ObjectId;
+    ref: "User";
+  };
   createdAt: Date;
   updatedAt: Date;
 }
@@ -42,6 +46,11 @@ const BloodRequestSchema = new Schema<BloodRequestDocument>(
     patientImage: { type: String },
     medicalReport: { type: String },
     additionalInfo: { type: String },
+    requestedBy: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
   },
   { timestamps: true }
 );

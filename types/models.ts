@@ -9,9 +9,13 @@ export type BloodRequest = {
   bagsNeeded: number;
   neededBy: string;
   contactNumber: string;
-  additionalInfo?: string;
   patientImage?: string;
   medicalReport?: string;
+  additionalInfo?: string;
+  requestedBy: {
+    firstName: string;
+    lastName: string;
+    imageURL?: string;
+  };
   createdAt: string;
-  updatedAt: string;
 };
