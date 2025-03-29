@@ -17,6 +17,7 @@ export interface BloodRequestDocument extends Document {
     type: Schema.Types.ObjectId;
     ref: "User";
   };
+  isPending: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -51,6 +52,7 @@ const BloodRequestSchema = new Schema<BloodRequestDocument>(
       ref: "User",
       required: true,
     },
+    isPending: { type: Boolean, default: true },
   },
   { timestamps: true }
 );

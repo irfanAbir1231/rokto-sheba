@@ -12,7 +12,23 @@ export type BloodRequest = {
   patientImage?: string;
   medicalReport?: string;
   additionalInfo?: string;
+  isPending: boolean; // New field
   requestedBy: {
+    firstName: string;
+    lastName: string;
+    clerkID: string; // New field for ownership check
+    imageURL?: string;
+  };
+  createdAt: string;
+};
+
+// Add this new Review type
+export type Review = {
+  _id: string;
+  rating: number;
+  comment?: string;
+  bloodRequest: string; // BloodRequest ID
+  user: {
     firstName: string;
     lastName: string;
     imageURL?: string;

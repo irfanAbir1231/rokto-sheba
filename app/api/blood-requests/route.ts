@@ -120,6 +120,7 @@ export const POST = async (req: NextRequest) => {
       patientImage: patientImageUrl,
       medicalReport: medicalReportUrl,
       requestedBy: user._id,
+      isPending: true,
     });
 
     await bloodRequest.save();
@@ -143,7 +144,7 @@ export const GET = async (req: NextRequest) => {
     // Base query with population
     let query = BloodRequest.find().populate({
       path: "requestedBy",
-      select: "firstName lastName imageURL createdAt",
+      select: "firstName lastName imageURL createdAt clerkID",
     });
 
     const userId = searchParams.get("userId");
@@ -221,6 +222,7 @@ export const GET = async (req: NextRequest) => {
         firstName: request.requestedBy.firstName,
         lastName: request.requestedBy.lastName,
         imageURL: request.requestedBy.imageURL,
+        clerkID: request.requestedBy.clerkID,
       },
     }));
 
