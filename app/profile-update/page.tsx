@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "react-toastify";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
+import Image from "next/image";
 import {
   Loader2,
   UploadCloud,
@@ -95,7 +96,8 @@ const ProfileUpdate = () => {
             setAvatarPreview(data.imageURL || user.imageUrl);
           }
         }
-      } catch (_) {
+      } catch (error) {
+        console.error("Error fetching profile data:", error);
         toast.error("Failed to load profile data");
       } finally {
         setIsLoading(false);
@@ -112,6 +114,7 @@ const ProfileUpdate = () => {
       const response = await fetch(
         `https://barikoi.xyz/v1/api/search/autocomplete/${process.env.NEXT_PUBLIC_BARIKOI_API_KEY}/place?q=${query}`
       );
+      console.log("Response:", response);
       const data = await response.json();
       setSuggestions(data.places || []);
     } catch (err) {
@@ -191,7 +194,8 @@ const ProfileUpdate = () => {
       } else {
         throw new Error("Update failed");
       }
-    } catch (_) {
+    } catch (error) {
+      console.error("Error updating profile:", error);
       toast.error("Failed to update profile");
     } finally {
       setIsSubmitting(false);
@@ -231,10 +235,17 @@ const ProfileUpdate = () => {
               />
               <div className="relative w-32 h-32 rounded-full border-4 border-gray-700 group-hover:border-red-500 transition-all">
                 {avatarPreview ? (
-                  <img
+                  <Image
                     src={avatarPreview}
                     alt="Profile"
+                    width={128}
+                    height={128}
                     className="w-full h-full rounded-full object-cover"
+                    unoptimized={
+                      avatarPreview.startsWith("blob:") ||
+                      avatarPreview.startsWith("data:")
+                    }
+                    priority
                   />
                 ) : (
                   <div className="w-full h-full rounded-full bg-gray-800 flex items-center justify-center text-gray-400 text-sm">
@@ -336,7 +347,7 @@ const ProfileUpdate = () => {
 
               {/* Blood Group */}
               <motion.div variants={inputAnimations}>
-                <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
                   <Droplet className="w-4 h-4" />
                   Blood Group
                 </label>
@@ -366,7 +377,7 @@ const ProfileUpdate = () => {
 
               {/* Date of Birth */}
               <motion.div variants={inputAnimations}>
-                <label className="block text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
+                <label className="text-sm font-medium text-gray-400 mb-2 flex items-center gap-2">
                   <CalendarDays className="w-4 h-4" />
                   Date of Birth
                 </label>

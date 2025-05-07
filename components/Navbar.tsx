@@ -100,14 +100,13 @@ const Navbar = () => {
                   appearance: {
                     elements: {
                       userProfile: {
-                        // Customize the user profile modal if needed
                       },
                     },
                   },
                 }}
               >
                 <UserButton.UserProfileLink
-                  label="Donation Information"
+                  label="Donor Information"
                   url={profileUrl}
                   labelIcon={<DotIcon />}
                 />
