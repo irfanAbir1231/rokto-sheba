@@ -7,19 +7,13 @@ interface MongooseConn {
   promise: Promise<Mongoose> | null;
 }
 
-// Define a global type extension to add mongoose property
 declare global {
+  // allow global `var` declarations
+  // eslint-disable-next-line no-var
   var mongoose: MongooseConn | undefined;
 }
 
-let cached: MongooseConn = global.mongoose || { conn: null, promise: null };
-
-if (!cached) {
-  cached = global.mongoose = {
-    conn: null,
-    promise: null,
-  };
-}
+const cached: MongooseConn = global.mongoose!;
 
 export const connectDB = async () => {
   if (cached.conn) return cached.conn;

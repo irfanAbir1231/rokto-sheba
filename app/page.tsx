@@ -6,77 +6,36 @@ import Navbar from "../components/Navbar";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
 
+const stats = {
+  totalDonors: 1245,
+  livesImpacted: 3789,
+  activeCampaigns: 8,
+  bloodRequests: 42,
+};
+
+type Donor = {
+  name: string;
+  bloodGroup: string;
+  location: string;
+  phone: string;
+  lastDonation?: string;
+  donationCount?: number;
+};
+
 export default function Home() {
-  const [city, setCity] = useState("");
   const [bloodGroup, setBloodGroup] = useState("");
-  const [searchPerformed, setSearchPerformed] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [scrollY, setScrollY] = useState(0);
-
-  interface Donor {
-    name: string;
-    bloodGroup: string;
-    location: string;
-    phone: string;
-    lastDonation?: string;
-    donationCount?: number;
-  }
-
-  const [donors, setDonors] = useState<Donor[]>([]);
-  const [stats, setStats] = useState({
-    totalDonors: 1245,
-    livesImpacted: 3789,
-    activeCampaigns: 8,
-    bloodRequests: 42,
-  });
+  const [donors] = useState<Donor[]>([]);
+  const [searchPerformed] = useState(false);
 
   // Handle scroll position for parallax effects
   useEffect(() => {
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      // ... existing scroll handling code ...
     };
 
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
-
-  const handleSearch = () => {
-    setLoading(true);
-
-    // Simulate API call
-    setTimeout(() => {
-      const filteredDonors = [
-        {
-          name: "Mohammad Abdullah",
-          bloodGroup: "A+",
-          location: "Dhaka",
-          phone: "123-456-7890",
-          lastDonation: "2 months ago",
-          donationCount: 5,
-        },
-        {
-          name: "Farhan Ahmed",
-          bloodGroup: "B+",
-          location: "Chattogram",
-          phone: "987-654-3210",
-          lastDonation: "3 months ago",
-          donationCount: 3,
-        },
-        {
-          name: "Tasnim Rahman",
-          bloodGroup: bloodGroup || "O+",
-          location: city || "Dhaka",
-          phone: "456-789-0123",
-          lastDonation: "1 month ago",
-          donationCount: 8,
-        },
-      ];
-
-      setDonors(filteredDonors);
-      setSearchPerformed(true);
-      setLoading(false);
-    }, 800);
-  };
 
   const testimonials = [
     {
@@ -356,10 +315,12 @@ export default function Home() {
                       className="flex flex-col sm:flex-row items-center bg-gradient-to-r from-[#161F2C] to-[#0D1117] shadow-lg rounded-xl p-6 border border-[#C1272D]"
                     >
                       <div className="relative mb-4 sm:mb-0">
-                        <img
+                        <Image
                           src={`/donor${index + 1}.jpg`}
                           alt="Donor"
                           className="w-20 h-20 rounded-full border-4 border-[#C1272D] object-cover"
+                          width={80}
+                          height={80}
                         />
                         <div className="absolute bottom-0 right-0 w-6 h-6 bg-green-500 border-2 border-white rounded-full"></div>
                       </div>
@@ -594,10 +555,12 @@ export default function Home() {
                   className="bg-gradient-to-br from-[#161F2C] to-[#0D1117] p-6 rounded-xl shadow-xl"
                 >
                   <div className="flex items-center mb-4">
-                    <img
+                    <Image
                       src={testimonial.image}
                       alt={testimonial.name}
                       className="w-12 h-12 rounded-full mr-4 border-2 border-[#C1272D]"
+                      width={48}
+                      height={48}
                     />
                     <h3 className="text-xl font-semibold text-white">
                       {testimonial.name}

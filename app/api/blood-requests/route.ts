@@ -10,7 +10,7 @@ import User from "@/lib/models/User";
 // Define a type for Cloudinary upload result
 interface CloudinaryUploadResult {
   secure_url: string;
-  [key: string]: any; // For other properties that might be in the result
+  [key: string]: unknown; // For other properties that might be in the result
 }
 
 export const POST = async (req: NextRequest) => {

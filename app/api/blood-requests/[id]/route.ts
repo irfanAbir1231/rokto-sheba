@@ -6,7 +6,7 @@ import User from "@/lib/models/User";
 
 export const PUT = async (
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) => {
   await connectDB();
   const { userId } = await auth();
@@ -20,7 +20,7 @@ export const PUT = async (
     if (!user)
       return NextResponse.json({ message: "User not found" }, { status: 404 });
 
-    const bloodRequest = await BloodRequest.findById(params.id).populate(
+    const bloodRequest = await BloodRequest.findById((await params).id).populate(
       "requestedBy"
     );
 
@@ -41,7 +41,7 @@ export const PUT = async (
     await bloodRequest.save();
 
     return NextResponse.json(bloodRequest);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 };

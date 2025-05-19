@@ -28,7 +28,7 @@ export const POST = async (req: NextRequest) => {
 
     await newReview.save();
     return NextResponse.json(newReview, { status: 201 });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ message: "Server error" }, { status: 500 });
   }
 };

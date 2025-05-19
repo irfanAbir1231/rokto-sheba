@@ -3,7 +3,18 @@ import React, { useState, useEffect } from "react";
 import { useUser } from "@clerk/clerk-react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Loader2, Edit3, FileText, Droplet, User, Phone, Calendar, MapPin, IdCard } from "lucide-react";
+import {
+  Loader2,
+  Edit3,
+  FileText,
+  Droplet,
+  User,
+  Phone,
+  Calendar,
+  MapPin,
+  IdCard,
+} from "lucide-react";
+import Image from "next/image";
 
 const Profile = () => {
   const { user, isLoaded } = useUser();
@@ -19,14 +30,14 @@ const Profile = () => {
     nid: "",
     imageUrl: "",
     address: { name: "", location: { type: "Point", coordinates: [0, 0] } },
-    reports: { hbsAg: "", vdrl: "", antiHcv: "", cbc: "" }
+    reports: { hbsAg: "", vdrl: "", antiHcv: "", cbc: "" },
   });
 
   const [loading, setLoading] = useState(true);
 
   const cardVariants = {
     hidden: { opacity: 0, y: 20 },
-    visible: { opacity: 1, y: 0 }
+    visible: { opacity: 1, y: 0 },
   };
 
   useEffect(() => {
@@ -55,8 +66,8 @@ const Profile = () => {
               hbsAg: data.hbsAgReport,
               vdrl: data.vdrlReport,
               antiHcv: data.antiHcvReport,
-              cbc: data.cbcReport
-            }
+              cbc: data.cbcReport,
+            },
           });
         }
       } catch (error) {
@@ -78,7 +89,7 @@ const Profile = () => {
   }
 
   return (
-    <motion.main 
+    <motion.main
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       className="min-h-screen bg-gradient-to-br from-[#0a0a0a] to-[#1a1a1a] pt-24"
@@ -109,13 +120,15 @@ const Profile = () => {
         >
           <div className="flex flex-col md:flex-row items-center p-8 gap-8">
             <div className="relative group w-32 h-32 shrink-0">
-              <img
+              <Image
                 src={profileData.imageUrl || "/default-avatar.png"}
                 alt="Profile"
+                width={128}
+                height={128}
                 className="w-full h-full rounded-2xl object-cover border-4 border-gray-800/50 group-hover:border-red-500 transition-colors"
               />
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 w-full">
               <DetailItem icon={<User />} label="Full Name">
                 {profileData.firstName} {profileData.lastName}
@@ -124,7 +137,9 @@ const Profile = () => {
                 {profileData.phone}
               </DetailItem>
               <DetailItem icon={<Droplet />} label="Blood Group">
-                <span className="text-red-500 font-semibold">{profileData.bloodGroup}</span>
+                <span className="text-red-500 font-semibold">
+                  {profileData.bloodGroup}
+                </span>
               </DetailItem>
               <DetailItem icon={<Calendar />} label="Date of Birth">
                 {profileData.dob}
@@ -152,24 +167,24 @@ const Profile = () => {
           </h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            <ReportCard 
-              title="HBsAg" 
-              url={profileData.reports.hbsAg} 
+            <ReportCard
+              title="HBsAg"
+              url={profileData.reports.hbsAg}
               className="hover:border-red-500"
             />
-            <ReportCard 
-              title="VDRL" 
-              url={profileData.reports.vdrl} 
+            <ReportCard
+              title="VDRL"
+              url={profileData.reports.vdrl}
               className="hover:border-pink-500"
             />
-            <ReportCard 
-              title="AntiHCV" 
-              url={profileData.reports.antiHcv} 
+            <ReportCard
+              title="AntiHCV"
+              url={profileData.reports.antiHcv}
               className="hover:border-purple-500"
             />
-            <ReportCard 
-              title="CBC" 
-              url={profileData.reports.cbc} 
+            <ReportCard
+              title="CBC"
+              url={profileData.reports.cbc}
               className="hover:border-blue-500"
             />
           </div>
@@ -179,7 +194,15 @@ const Profile = () => {
   );
 };
 
-const DetailItem = ({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) => (
+const DetailItem = ({
+  icon,
+  label,
+  children,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  children: React.ReactNode;
+}) => (
   <div className="flex items-start gap-4">
     <div className="p-2 bg-gray-900/50 rounded-lg text-red-500">{icon}</div>
     <div>
@@ -189,7 +212,15 @@ const DetailItem = ({ icon, label, children }: { icon: React.ReactNode; label: s
   </div>
 );
 
-const ReportCard = ({ title, url, className }: { title: string; url: string; className?: string }) => (
+const ReportCard = ({
+  title,
+  url,
+  className,
+}: {
+  title: string;
+  url: string;
+  className?: string;
+}) => (
   <motion.div
     whileHover={{ scale: 1.03 }}
     className={`bg-gray-900/50 rounded-xl p-4 border border-gray-800/50 transition-all ${className}`}

@@ -33,6 +33,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useUser } from "@clerk/nextjs";
+import Image from "next/image";
 
 type BarikoiLocation = {
   address: string;
@@ -99,7 +100,7 @@ export default function RequestBlood() {
       );
       const data = await response.json();
       setSuggestions(data.places || []);
-    } catch (error) {
+    } catch {
       toast.error("Failed to load location suggestions");
     } finally {
       setIsSearching(false);
@@ -137,7 +138,7 @@ export default function RequestBlood() {
         }
 
         setProfileVerified(true);
-      } catch (error) {
+      } catch {
         toast.error("Failed to verify profile");
         router.push("/profile-update");
       } finally {
@@ -244,10 +245,8 @@ export default function RequestBlood() {
       setPatientImage(null);
       setMedicalReport(null);
       setCurrentStep(1);
-    } catch (error: unknown) {
-      const errorMessage =
-        error instanceof Error ? error.message : "Submission failed";
-      toast.error(errorMessage);
+    } catch {
+      toast.error("Submission failed");
     } finally {
       setLoading(false);
     }
@@ -578,9 +577,11 @@ export default function RequestBlood() {
                             animate={{ opacity: 1 }}
                             className="mt-3"
                           >
-                            <img
+                            <Image
                               src={URL.createObjectURL(patientImage)}
                               alt="Preview"
+                              width={96}
+                              height={96}
                               className="w-24 h-24 rounded-lg object-cover mx-auto border border-gray-700"
                             />
                           </motion.div>

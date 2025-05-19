@@ -26,6 +26,7 @@ import {
 } from "@/components/ui/popover";
 import { useUser } from "@clerk/nextjs";
 import { createPortal } from "react-dom";
+import Image from "next/image";
 
 type LocationSuggestion = {
   id: number;
@@ -38,37 +39,6 @@ type LocationSuggestion = {
 // Add types for sorting
 type SortBy = "createdAt" | "neededBy" | "bagsNeeded";
 type SortOrder = "asc" | "desc";
-
-// Use native fetch with a simple AbortController implementation
-const useFetch = <T,>(url: string, options = {}) => {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-
-  const fetchData = useCallback(async () => {
-    const controller = new AbortController();
-    setLoading(true);
-    try {
-      const response = await fetch(url, {
-        signal: controller.signal,
-        ...options,
-      });
-      if (!response.ok) throw new Error("Failed to fetch data");
-      const result = await response.json();
-      setData(result);
-      setError("");
-    } catch (err) {
-      if (err instanceof Error && err.name !== "AbortError") {
-        setError(err.message || "Failed to load data");
-      }
-    } finally {
-      setLoading(false);
-    }
-    return () => controller.abort();
-  }, [url, options]);
-
-  return { data, loading, error, fetchData };
-};
 
 // Add a LoadingSkeleton component for cards
 const LoadingSkeleton = () => {
@@ -214,18 +184,18 @@ const RequestCard = ({ request }: { request: BloodRequest }) => {
         >
           <div className="text-center mb-6">
             <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg 
-                xmlns="http://www.w3.org/2000/svg" 
-                className="h-8 w-8 text-green-500" 
-                fill="none" 
-                viewBox="0 0 24 24" 
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-8 w-8 text-green-500"
+                fill="none"
+                viewBox="0 0 24 24"
                 stroke="currentColor"
               >
-                <path 
-                  strokeLinecap="round" 
-                  strokeLinejoin="round" 
-                  strokeWidth={2} 
-                  d="M5 13l4 4L19 7" 
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
                 />
               </svg>
             </div>
@@ -233,7 +203,8 @@ const RequestCard = ({ request }: { request: BloodRequest }) => {
               Review Submitted!
             </h2>
             <p className="text-gray-400 text-sm">
-              Thank you for your feedback. Your review has been successfully submitted.
+              Thank you for your feedback. Your review has been successfully
+              submitted.
             </p>
           </div>
 
@@ -284,12 +255,12 @@ const RequestCard = ({ request }: { request: BloodRequest }) => {
           comment,
         }),
       });
-      
+
       if (response.ok) {
         setShowReviewModal(false);
         // Show success message after successful submission
         setShowSuccessMessage(true);
-        
+
         // Automatically hide success message after 3 seconds
         setTimeout(() => {
           setShowSuccessMessage(false);
@@ -309,10 +280,12 @@ const RequestCard = ({ request }: { request: BloodRequest }) => {
       style={{ transform: "translateZ(15px)" }}
     >
       <div className="relative">
-        <img
+        <Image
           src={request.requestedBy.imageURL || "/default-avatar.png"}
           alt="Profile"
           className="w-8 h-8 sm:w-10 sm:h-10 rounded-full border-2 border-red-500/50 object-cover"
+          width={48}
+          height={48}
           loading="lazy"
         />
       </div>
@@ -426,7 +399,7 @@ const RequestCard = ({ request }: { request: BloodRequest }) => {
             }`}
             style={{ transform: "translateZ(25px)" }}
           >
-            <img
+            <Image
               src={request.patientImage}
               alt="Patient"
               width={64}
